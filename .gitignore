@@ -1,0 +1,53 @@
+# Deny by default: only what is explicitly allowed below can be added to git.
+# Local test artifacts, secrets (.env), and tooling stay out without a rule
+# for each one. Tracked files are unaffected.
+/*
+!/.github/
+!/.github/**
+!/benchmarks/
+!/benchmarks/**
+!/docs/
+!/docs/**
+!/service/
+!/service/**
+!/skills/remove-ai-marks/
+!/skills/remove-ai-marks/**
+!/tests/
+!/tests/**
+!/.dockerignore
+!/.env.example
+!/.gitignore
+!/.pre-commit-hooks.yaml
+!/AGENTS.md
+!/CODE_OF_CONDUCT.md
+!/compose-check.sh
+!/compose.yaml
+!/CONTRIBUTING.md
+!/install.sh
+!/install.ps1
+!/integrations/
+!/integrations/**
+!/LICENSE
+!/Makefile
+!/NOTICE
+!/package.json
+!/plugin.json
+!/pytest.ini
+!/README.md
+!/requirements-dev.txt
+!/ruff.toml
+!/SECURITY.md
+!/skills.json
+!/skills/clean-user-facing-text/
+!/skills/clean-user-facing-text/**
+
+# Exceptions even inside allowed trees
+.env
+**/__pycache__/
+*.pyc
+.venv/
+.firecrawl/
+.figlet/
+posts.md
+*.cleaned.*
+*.bak

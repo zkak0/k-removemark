@@ -1,0 +1,19 @@
+{
+  "name": "remove-ai-marks",
+  "version": "0.1.0",
+  "description": "Remove multi-vendor AI provenance marks: invisible Unicode, statistical text watermarks (Layer B rewrite), and C2PA/EXIF/XMP/container metadata on images, documents, audio and video.",
+  "author": "your-org",
+  "license": "MIT",
+  "skills": [
+    {
+      "name": "remove-ai-marks",
+      "description": "Strip AI provenance marks across vendors (Claude, Gemini/SynthID-class, OpenAI, open-LLM) from text, code, images, video, audio and metadata. Always offers Layer B rewrite and reports honestly.",
+      "path": "../../skills/remove-ai-marks"
+    },
+    {
+      "name": "clean-user-facing-text",
+      "description": "Text hygiene for natural-language content (invisible Unicode, statistical-watermark reduction) without altering meaning.",
+      "path": "../../skills/clean-user-facing-text"
+    }
+  ]
+}

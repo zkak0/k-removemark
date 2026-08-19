@@ -1,0 +1,7 @@
+{
+  "description": "Multi-vendor AI watermark remover skills (agentskills.io format).",
+  "skills": [
+    "skills/remove-ai-marks",
+    "skills/clean-user-facing-text"
+  ]
+}

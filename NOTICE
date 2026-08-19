@@ -1,0 +1,32 @@
+# NOTICE
+
+This repository is a fork of **`guillaumemeyer/watermarks-remover`** (MIT
+License) and merges code and techniques from the following upstream projects.
+Each component keeps the license of its origin; the whole distribution is
+MIT unless a file states otherwise.
+
+## Upstream projects
+
+| Project | License | What we take / plan to take |
+| --- | --- | --- |
+| `guillaumemeyer/watermarks-remover` | MIT | Base: HTTP service, Layer A Unicode clean, Layer B rewrite hooks, C2PA/EXIF/XMP/container cleaners, skill `SKILL.md`, tests, CI. |
+| `wiltodelta/remove-ai-watermarks` | Apache-2.0 | Visible watermark removal (Gemini sparkle, Doubao text strip, video marks), SynthID invisible regeneration, C2PA/EXIF/IPTC/TC260 metadata. |
+| `GargantuaX/gemini-watermark-remover` | MIT | Pure-JS/browser reverse-alpha blending for the Gemini visible watermark (client-side, no GPU). |
+| `policeakshithreddy/antiwatermark` | MIT | Text humanizer, AI-cliché replacement, clipboard daemon, Chrome extension, heuristic diagnostics. |
+| `rakib-nyc/nullorigin` | Apache-2.0 | Keyed KGW detector (whitespace tokens), DSP audio attacks (phase/notch), reverse proxy concepts, Trojan Source scanning. |
+| `CharlesHoskinson/anthropies` | Apache-2.0 | Claude-specific clean: git `Co-Authored-By` trailers, attribution banners, non-origin rewrite guidance. |
+| `THU-BPM/MarkLLM` | Apache-2.0 | Optional research harness (KGW / SynthID schemes) — never bundled in the default install. |
+| `THU-BPM/MarkDiffusion` | Apache-2.0 | Optional image harness (Tree-Ring class) — never bundled in the default install. |
+| `ShieldMnt/invisible-watermark` | MIT | DWT-DCT frequency-domain image watermark detector/decoder (CPU). |
+| `google-deepmind/synthid-text` | Apache-2.0 | Reference SynthID-Text scoring algorithms (Mean / Weighted Mean) reimplemented in stdlib. |
+| `jwkirchenbauer/lm-watermarking` | Apache-2.0 | Reference KGW green/red-list algorithm reimplemented in stdlib (no torch). |
+
+## Obligations
+
+- MIT components: retain the MIT copyright notice (see `LICENSE`).
+- Apache-2.0 components: retain this NOTICE and include the Apache-2.0
+  license text for those files where required.
+- **Never redistribute** components that carry no license or a
+  non-commercial Research License (e.g. `aloshdenny/reverse-SynthID`,
+  `mertizci/noai-watermark`). Those are loaded at runtime from the user's own
+  checkout only, never committed or published as images.

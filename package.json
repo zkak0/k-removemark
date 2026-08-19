@@ -1,0 +1,24 @@
+{
+  "name": "k-removemark",
+  "version": "0.1.0",
+  "description": "Unified multi-vendor AI watermark remover: text (invisible Unicode + statistical KGW/SynthID-class), code, images (metadata + visible), video, audio and container metadata, for every AI agent.",
+  "license": "MIT",
+  "skills": [
+    "./skills/remove-ai-marks",
+    "./skills/clean-user-facing-text"
+  ],
+  "files": [
+    "skills/",
+    "integrations/",
+    "AGENTS.md",
+    "NOTICE",
+    "install.sh",
+    "install.ps1"
+  ],
+  "scripts": {
+    "install": "echo 'Run ./install.sh (POSIX) or ./install.ps1 (Windows) to copy the skills into your agent host.'"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

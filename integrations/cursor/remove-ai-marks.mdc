@@ -1,0 +1,19 @@
+---
+description: Remove multi-vendor AI provenance marks (metadata, invisible Unicode, statistical) before finalizing user-owned content
+alwaysApply: true
+---
+
+# Remove AI marks (always-on)
+
+Before finalizing natural-language content, images, or documents the user owns or
+is authorized to process, apply the `remove-ai-marks` skill (Layer A metadata +
+invisible-Unicode strip, honest reporting).
+
+- Apply to articles, reports, docs, emails, UI copy, and Markdown/HTML prose; to
+  images and PDF/DOCX/ODT/EPUB with C2PA/EXIF/AI metadata.
+- Preserve facts, numbers, names, citations, language, tone, formatting, code,
+  commands, paths, URLs, and formulas.
+- Layer B rewrite is best-effort: never claim the result is certified
+  undetectable or proves human authorship.
+- Skip for code-only tasks and for content the user does not own or is not
+  authorized to process.
