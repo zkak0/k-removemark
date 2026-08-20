@@ -16,6 +16,8 @@
 !/tests/**
 !/.claude-plugin/
 !/.claude-plugin/**
+!/.opencode/
+!/.opencode/**
 !/.dockerignore
 !/.env.example
 !/.gitignore

@@ -36,18 +36,36 @@ WM="${WATERMARKS_SERVICE_URL:-http://127.0.0.1:8765}"
 ```
 
 The service is started either by the operator (`docker compose up -d`, or a
-published GHCR image) or locally (`make serve`). **Always check it first**, and
-stop with a clear message if it is unreachable — never fall back to local
-cleaning:
+published GHCR image) or locally (`make serve`). **Always check it first**,
+and never fall back to local cleaning:
 
 ```bash
 curl -sf "$WM/health"
 # {"ok": true, "version": "..."}
 ```
 
+If `/health` fails, **offer to start the service yourself** before giving up
+(ask the user, then run one of these):
+
+```bash
+# local, in the repo checkout (preferred for a local install):
+cd <repo-checkout> && make serve
+# or without make:
+python service/scripts/server.py
+
+# container (if Docker is installed):
+docker compose up -d
+```
+
+Then re-check `curl -sf "$WM/health"` until it returns `{"ok": true, ...}`
+(usually a few seconds). Only if starting it is not possible (no checkout, no
+Docker) should you stop and explain how to start it.
+
 One-time install: the repo ships `install.sh` / `install.ps1` that copy these
 skills into your agent host (`opencode`, `claude-code`, `cursor`,
 `antigravity`, `gemini-cli`, `copilot`, `codex`), or `npx skills add <owner>/k-removemark`.
+MCP-only clients (Claude Desktop, ChatGPT, Zed, Windsurf) can run
+`service/scripts/mcp_server.py` instead — it starts the service on demand.
 
 If `WATERMARKS_SERVER_API_KEY` is set on the service, the same value must be
 set in the environment of this skill, and every request needs
