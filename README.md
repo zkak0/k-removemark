@@ -1,15 +1,13 @@
 # k-removemark
 
-**Limpia marcas de agua de IA de tus archivos.** Texto, código, imágenes, vídeo,
-audio y metadatos — todo en tu equipo, sin subir nada a internet.
+**Limpia marcas de agua de IA de tus archivos.** Texto, código, imágenes, vídeo, audio y metadatos — todo en tu equipo, sin subir nada a internet.
 
 [![CI](https://github.com/zkak0/k-removemark/actions/workflows/ci.yml/badge.svg)](https://github.com/zkak0/k-removemark/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/zkak0/k-removemark)](https://github.com/zkak0/k-removemark/releases)
 
 ## ¿Qué hace?
 
-Quita las marcas que dejan los generadores de IA (Claude, Gemini/SynthID, OpenAI,
-LLMs abiertos y generadores chinos) para que tu contenido quede limpio y privado:
+Quita las marcas que dejan los generadores de IA (Claude, Gemini/SynthID, OpenAI, LLMs abiertos y generadores chinos) para que tu contenido quede limpio y privado:
 
 | Qué elimina | Cómo |
 | --- | --- |
@@ -17,23 +15,19 @@ LLMs abiertos y generadores chinos) para que tu contenido quede limpio y privado
 | **Imágenes, vídeo y audio** | Marcas visibles y señales por DSP (en CPU) |
 | **Archivos** | C2PA, EXIF, XMP y metadatos de procedencia |
 
-Funciona con PDF, DOCX, XLSX, PPTX, EPUB, ODT, HTML, Markdown, PNG, JPEG, WebP,
-AVIF, HEIC, BMP, GIF, TIFF, SVG, MP4/MOV, WAV y MP3.
+Funciona con PDF, DOCX, XLSX, PPTX, EPUB, ODT, HTML, Markdown, PNG, JPEG, WebP, AVIF, HEIC, BMP, GIF, TIFF, SVG, MP4/MOV, WAV y MP3.
 
 ## Beneficios
 
 - **Privacidad:** elimina la "etiqueta" de IA de tu contenido.
-- **Para contenido tuyo:** borradores, manuscritos o material que estés
-  autorizado a procesar.
+- **Para contenido tuyo:** borradores, manuscritos o material que estés autorizado a procesar.
 - **Sin GPU y sin modelos:** 100 % CPU por defecto. Nada se envía a la nube.
 - **Fácil de usar:** un comando para instalarlo en tu agente y listo.
-- **Honesto:** te informa qué eliminó de verdad y qué fue un intento
-  (mejor esfuerzo).
+- **Honesto:** te informa qué eliminó de verdad y qué fue un intento (mejor esfuerzo).
 
 ## Instalación (skill para tu agente)
 
-Funciona con opencode, Claude Code, Cursor, Antigravity, Gemini CLI, Copilot y
-Codex.
+Funciona con OpenCode, Claude Code, Cursor, Antigravity, Gemini CLI, Copilot y Codex.
 
 ```bash
 # Opción 1 — en un solo comando:
@@ -46,16 +40,11 @@ npx skills add zkak0/k-removemark
 
 Después pide a tu agente *"quita las marcas de agua"*.
 
-### Usar desde cualquier herramienta (una orden)
+## Usar desde cualquier herramienta (una orden)
 
-La idea es **pegar el link del repo y dar una sola orden** en la herramienta
-que ya usas (OpenCode, Claude Code, Cursor, Antigravity, VS Code, Gemini CLI,
-Claude Desktop, ChatGPT, Zed, Windsurf…). Plantillas de una orden para cada
-una: [`integrations/QUICKSTART.md`](integrations/QUICKSTART.md).
+La idea es **pegar el link del repo y dar una sola orden** en la herramienta que ya usas (OpenCode, Claude Code, Cursor, Antigravity, VS Code, Gemini CLI, Claude Desktop, ChatGPT, Zed, Windsurf…). Plantillas de una orden para cada una: [`integrations/QUICKSTART.md`](integrations/QUICKSTART.md).
 
-¿Tu herramienta solo habla MCP (Claude Desktop, ChatGPT, Zed, Windsurf)?
-Conecta un servidor MCP a `service/scripts/mcp_server.py` (arranca el servicio
-automáticamente al primer uso):
+¿Tu herramienta solo habla MCP (Claude Desktop, ChatGPT, Zed, Windsurf)? Conecta un servidor MCP a `service/scripts/mcp_server.py` (arranca el servicio automáticamente al primer uso):
 
 ```json
 {
@@ -68,10 +57,9 @@ automáticamente al primer uso):
 }
 ```
 
-### Servicio local (opcional)
+## Servicio local (opcional)
 
-El servicio es un servidor HTTP ligero en Python 3.10+ (solo librería estándar,
-sin dependencias ni Docker):
+El servicio es un servidor HTTP ligero en Python 3.10+ (solo librería estándar, sin dependencias ni Docker):
 
 ```bash
 make serve                # http://127.0.0.1:8765
@@ -100,19 +88,11 @@ docker compose up -d      # servicio HTTP en http://127.0.0.1:8765
 
 ## Nota honesta
 
-k-removemark elimina de forma verificable los metadatos y los caracteres
-invisibles. La reescritura de texto marcado estadísticamente es un trabajo de
-*mejor esfuerzo*: siempre se informa qué se consiguió y qué no.
+k-removemark elimina de forma verificable los metadatos y los caracteres invisibles. La reescritura de texto marcado estadísticamente es un trabajo de *mejor esfuerzo*: siempre se informa qué se consiguió y qué no.
 
-Usa esta herramienta solo en contenido que te pertenezca o que tengas permiso
-de procesar. Respeta las leyes locales.
+Usa esta herramienta solo en contenido que te pertenezca o que tengas permiso de procesar. Respeta las leyes locales.
 
-> **Aviso legal (China):** la norma GB 45438-2025 (vigente desde el 1 de
-> septiembre de 2025) obliga a etiquetar el contenido generado por IA
-> (etiquetas visibles y metadatos AIGC). **Eliminar esas etiquetas obligatorias
-> es ilegal en China** y ya hay sanciones aplicadas a cuentas y a vendedores de
-> herramientas para quitarlas. Esta herramienta no debe usarse para ocultar la
-> procedencia de contenido que no es tuyo ni para evadir obligaciones legales.
+> **Aviso legal (China):** la norma GB 45438-2025 (vigente desde el 1 de septiembre de 2025) obliga a etiquetar el contenido generado por IA (etiquetas visibles y metadatos AIGC). **Eliminar esas etiquetas obligatorias es ilegal en China** y ya hay sanciones aplicadas a cuentas y a vendedores de herramientas para quitarlas. Esta herramienta no debe usarse para ocultar la procedencia de contenido que no es tuyo ni para evadir obligaciones legales.
 
 ## Documentación
 
@@ -133,6 +113,6 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 
 - Detección estadística de marcas de texto (KGW y SynthID-Text) con clave.
 - Limpieza de metadatos y marcas visibles en imágenes, vídeo y audio (CPU).
-- Skill de agente e instaladores para opencode, Cursor, Claude Code, etc.
+- Skill de agente e instaladores para OpenCode, Cursor, Claude Code, etc.
 - Modo automático: hooks de pre-commit, portapapeles y carpeta vigilada.
 - Informe honesto: separa lo verificado de lo que es mejor esfuerzo.

@@ -1,51 +1,51 @@
 ---
-name: Bug report
-about: Report a defect in k-removemark (text/image cleaning, skill docs, or scripts)
+name: Informe de error
+about: Reporta un defecto en k-removemark (limpieza de texto/imagen, docs de la skill, o scripts)
 title: "[bug] "
 labels: bug
 assignees: ""
 ---
 
-## What happened
+## Qué ocurrió
 
-A clear description of the unexpected behaviour.
+Una descripción clara del comportamiento inesperado.
 
-## What you expected
+## Qué esperabas
 
-What should have happened instead.
+Qué debería haber pasado en su lugar.
 
-## Steps to reproduce
+## Pasos para reproducir
 
 1.
 2.
 3.
 
-## Environment
+## Entorno
 
-- OS and arch:
-- Python version (`python3 --version`):
-- How you run the skill (Grok skill path / symlink / scripts only):
-- Optional tools present (`c2patool`, `exiftool`) and versions if relevant:
+- SO y arquitectura:
+- Versión de Python (`python3 --version`):
+- Cómo ejecutas la skill (ruta skill de Grok / symlink / solo scripts):
+- Herramientas opcionales presentes (`c2patool`, `exiftool`) y versiones si es relevante:
 
-## Input type
+## Tipo de entrada
 
-- [ ] Text (paste / `.txt` / `.md` / other)
-- [ ] Image (PNG / JPEG)
-- [ ] Both / batch directory
-- Layer involved: A (Unicode) / B (rewrite guidance) / Files (C2PA/metadata)
+- [ ] Texto (pegado / `.txt` / `.md` / otro)
+- [ ] Imagen (PNG / JPEG)
+- [ ] Ambos / directorio en lote
+- Capa involucrada: A (Unicode) / B (guía de reescritura) / Archivos (C2PA/metadatos)
 
-## Diagnostics
+## Diagnóstico
 
-Paste relevant CLI output (redact private content):
+Pega la salida CLI relevante (redacta contenido privado):
 
 ```bash
 SCRIPTS=service/scripts
-python3 "$SCRIPTS/inspect_file.py" path
-# or:
-python3 "$SCRIPTS/inspect_text.py" path/or/-
-python3 "$SCRIPTS/inspect_image.py" path.png
+python3 "$SCRIPTS/inspect_file.py" ruta
+# o:
+python3 "$SCRIPTS/inspect_text.py" ruta/o/-
+python3 "$SCRIPTS/inspect_image.py" imagen.png
 ```
 
-## Extra context
+## Contexto adicional
 
-Sample files (if shareable), screenshots, or related issues. Do not paste secrets, private documents, or material you do not own.
+Archivos de muestra (si se pueden compartir), capturas de pantalla, o issues relacionados. No pegues secretos, documentos privados, o material que no sea tuyo.

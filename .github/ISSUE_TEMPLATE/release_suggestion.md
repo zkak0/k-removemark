@@ -1,23 +1,23 @@
 ---
-name: Release suggestion
-about: Suggest a new release (tag, changelog focus, timing)
+name: Sugerencia de release
+about: Sugiere un nuevo release (tag, foco del changelog, momento)
 title: "[release] "
 labels: release
 assignees: ""
 ---
 
-## Why release now?
+## ¿Por qué release ahora?
 
-What should go into the next release? Link related PRs or issues if you can.
+¿Qué debería entrar en el próximo release? Enlaza PRs o issues relacionados si puedes.
 
-## Suggested version
+## Versión sugerida
 
-- Suggested: patch / minor / major (or a concrete tag, e.g. `v0.2.0`)
+- Sugerida: patch / minor / major (o un tag concreto, ej. `v0.2.0`)
 
-## What to highlight
+## Qué destacar
 
-List user-facing changes (skill behaviour, scripts, docs) that belong in the notes.
+Lista los cambios visibles para el usuario (comportamiento de la skill, scripts, docs) que vayan en las notas.
 
-## Extra context
+## Contexto adicional
 
-Anything the maintainer should know before cutting the release.
+Cualquier cosa que el mantenedor deba saber antes de cortar el release.
