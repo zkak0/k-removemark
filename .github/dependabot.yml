@@ -7,35 +7,33 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 5
+      interval: "monthly"
+    open-pull-requests-limit: 3
 
   # Root dev/test dependencies (requirements-dev.txt: pytest, pip-audit).
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 10
+      interval: "monthly"
+    open-pull-requests-limit: 3
 
-  # Optional reverse-SynthID scorer dependencies. NOTE: these pins are
-  # compatibility-coupled to the upstream checkout pinned in
-  # setup_synthid.sh / Dockerfile.synthid (REVERSE_SYNTHID_REF). Before merging
-  # a bump, re-verify the scorer against that upstream commit — CI's pip-audit
-  # step will flag any security regression, but functional compatibility must
-  # be checked by a human.
+  # Optional harness dependencies in service/scripts. NOTE: tokenizers is
+  # capped at <=0.23.0 by transformers 5.15.x, so it must never be bumped
+  # (the 0.23.1 release does not satisfy the cap). The other opt-in files are
+  # pinned to current versions; any proposed bump must be re-validated on a
+  # device before merging, because these backends are not exercised in CI.
   - package-ecosystem: "pip"
     directory: "/service/scripts"
     schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 10
+      interval: "monthly"
+    open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: "tokenizers"
 
   # Docker base image (Dockerfile.synthid): tracks the digest-pinned
-  # python:3.11-slim base. Monthly — digest churn is low-signal weekly.
+  # python:3.14-slim base. Monthly — digest churn is low-signal weekly.
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "monthly"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3

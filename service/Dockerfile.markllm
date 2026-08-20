@@ -19,7 +19,7 @@ ARG MARKLLM_REF=c45ddc40f7b761beabe55a1b8dc4690e531d1c6d
 
 # Default: python:3.14-slim linux/amd64 digest (published image). GPU/arm64
 # builds override with --build-arg BASE_IMAGE=<digest for the target arch>.
-ARG BASE_IMAGE=python:3.14-slim@sha256:ce40764625a4ff50df3548277632e7f96c4e77fe75fa848aae9885476e7df5a4
+ARG BASE_IMAGE=python:3.14-slim@sha256:d6e0850f13fda0e2305d4c3c1c2f7930fe1042d34ddd958e49bba6ef685d0bb2
 FROM ${BASE_IMAGE}
 
 ARG MARKLLM_REF

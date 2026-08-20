@@ -15,14 +15,14 @@
 #   - runs as an unprivileged user (a crafted image can no longer write
 #     files as root inside the container)
 
-# Pinned upstream commit (2026-08-13). Keep in sync with setup_ctrlregen.sh.
+# Pinned upstream commit (tip of mertizci/noai-watermark main). Keep in sync
+# with setup_ctrlregen.sh.
 ARG NOAI_WATERMARK_REF=b642ae45d20eded52c96d570985eb4e3e427aac8
 
-# python:3.11-slim (multi-arch manifest digest). The pinned ML deps below are
-# research-era pins (diffusers 0.27.2 / transformers 4.37.2 -> tokenizers<0.19)
-# that ship no Python 3.14 wheels; 3.11 is the newest base with prebuilt wheels
-# for all of them.
-FROM python:3.11-slim@sha256:a630a63cdb314e2d138a2fca3e375e319e8568346ffafac5b980f888630ac4f1
+# python:3.14-slim (multi-arch manifest digest). The ML deps in
+# requirements-ctrlregen.txt are current versions that ship Python 3.14 wheels,
+# so the newest slim base is used, matching the other service images.
+FROM python:3.14-slim@sha256:d6e0850f13fda0e2305d4c3c1c2f7930fe1042d34ddd958e49bba6ef685d0bb2
 
 ARG NOAI_WATERMARK_REF
 
