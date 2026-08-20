@@ -8,12 +8,20 @@
     {
       "name": "remove-ai-marks",
       "description": "Strip AI provenance marks across vendors (Claude, Gemini/SynthID-class, OpenAI, open-LLM) from text, code, images, video, audio and metadata. Always offers Layer B rewrite and reports honestly.",
-      "source": "../../skills/remove-ai-marks"
+      "source": "skills/remove-ai-marks"
     },
     {
       "name": "clean-user-facing-text",
       "description": "Text hygiene for natural-language content (invisible Unicode, statistical-watermark reduction) without altering meaning.",
-      "source": "../../skills/clean-user-facing-text"
+      "source": "skills/clean-user-facing-text"
+    }
+  ],
+  "commands": [
+    {
+      "name": "remove-ai-marks",
+      "description": "Inspect and clean AI provenance marks (invisible Unicode, metadata, statistical text watermarks) from text, files or clipboard content.",
+      "skill": "remove-ai-marks",
+      "argument_hint": "[text or path to file]"
     }
   ]
 }

@@ -14,6 +14,8 @@
 !/skills/remove-ai-marks/**
 !/tests/
 !/tests/**
+!/.claude-plugin/
+!/.claude-plugin/**
 !/.dockerignore
 !/.env.example
 !/.gitignore

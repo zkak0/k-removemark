@@ -2,7 +2,7 @@
   "name": "remove-ai-marks",
   "version": "0.1.0",
   "description": "Remove multi-vendor AI provenance marks: invisible Unicode, statistical text watermarks (Layer B rewrite), and C2PA/EXIF/XMP/container metadata on images, documents, audio and video.",
-  "author": "your-org",
+  "author": "zkak0",
   "license": "MIT",
   "skills": [
     {

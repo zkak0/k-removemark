@@ -49,8 +49,9 @@ One-time install: the repo ships `install.sh` / `install.ps1` that copy these
 skills into your agent host (`opencode`, `claude-code`, `cursor`,
 `antigravity`, `gemini-cli`, `copilot`, `codex`), or `npx skills add <owner>/k-removemark`.
 
-If `WATERMARKS_SERVER_API_KEY` is set on the service, every request needs
-`-H "Authorization: Bearer $WATERMARKS_SERVICE_API_KEY"`.
+If `WATERMARKS_SERVER_API_KEY` is set on the service, the same value must be
+set in the environment of this skill, and every request needs
+`-H "Authorization: Bearer $WATERMARKS_SERVER_API_KEY"`.
 
 ### Capabilities
 

@@ -5,8 +5,9 @@
 > summaries (`ES:` marks Spanish guidance).
 
 Estado / Status: **Fases 1–7 completas** — nombre: `k-removemark`, repo objetivo
-`zkak0/k-removemark`. Pendiente solo la publicación (push + release + skills.sh).
-569 tests passing.
+`zkak0/k-removemark` (privado, con release `v0.1.0` + GHCR images + CI verde).
+Pendiente solo: hacer público cuando el propietario decida (checklist en
+`docs/PUBLICAR.md`). 576 tests passing.
 
 ---
 
@@ -41,9 +42,9 @@ a demanda) y en modo automático (revisión permanente).
 5. **Sin advertencia de fraude académico.** Solo una nota breve de "contenido
    propio / authorized content" (decisión del propietario del repo).
 6. **Documentación bilingüe** (EN primary, ES summaries).
-7. **Nombre del repo:** pendiente. Se decide antes de publicar; mientras tanto
-   el código vive en `C:\Users\clamarq\Desktop\Anti marca de agua` sin remoto
-   propio.
+7. **Nombre del repo:** `k-removemark` (elegido por el propietario), en GitHub
+   como `zkak0/k-removemark`. Hoy **privado** por decisión del propietario;
+   todo listo para publicar (ver `docs/PUBLICAR.md`).
 
 ## 3. Fases / Phases
 
@@ -179,9 +180,35 @@ Nuestro detector keyed y señal sin clave, 100 % CPU, sin LLM.
       (`k-removemark*`, `ghcr.io/zkak0/k-removemark`), pre-commit hook IDs
       (`k-removemark-check`/`clean`), compose, Dockerfiles, release workflow y
       comandos de instalación (`npx skills add zkak0/k-removemark`).
-- [ ] Publicación: push a GitHub (repo `zkak0/k-removemark`),
-      badges del README, `skills.sh` listing, release `v0.1.0` + GHCR images
-      (`.github/workflows/release-images.yml`).
+- [x] Publicación técnica hecha: repo `zkak0/k-removemark` (privado) con push,
+      release `v0.1.0`, GHCR images (`ghcr.io/zkak0/k-removemark` +
+      `markllm-*`/`markdiffusion-*`) y CI verde (3 OS + lint + verify harness).
+- [ ] Publicación completa (solo cuando el propietario lo decida):
+      volver el repo público, activar CodeQL (auto, hoy se salta en privado),
+      badges del README, `skills.sh` listing, topics. Ver `docs/PUBLICAR.md`.
+
+### Fase 8 — v0.2 Mejoras (en curso 🔨)
+
+- [x] Fix: variable de API key unificada (`WATERMARKS_SERVER_API_KEY`) en server y skill.
+- [x] Fix: Makefile `smoke-markdiffusion` (cerraba mal el `fi`, rompía `bench-synthid-text`).
+- [x] Fix: `docs/windows-autostart.md` (nombre de tarea unificado).
+- [x] Fix: `clipboard_daemon.py` — backend `xsel` real (antes detectaba xsel y usaba xclip).
+- [x] Fix: test inestable de redirect (espera acotada en vez de `sleep(0.2)`).
+- [x] Fix: `tests/test_clean_audio.py` escribía un WAV `unused` en la raíz del repo.
+- [x] Plugin: `plugin.json` raíz + `.claude-plugin/marketplace.json` (ruta de marketplace de Claude Code).
+- [x] Tests: paridad funcional de scripts vendored + coherencia de variable de API key.
+- [ ] MCP server (`service/scripts/mcp_server.py`) para clientes solo-MCP (Claude Desktop, ChatGPT, Zed, Windsurf).
+- [ ] Auto-arranque del servicio HTTP desde el skill (si `/health` falla).
+- [ ] `.opencode/` con `opencode.json` (skills + MCP).
+- [ ] Plantillas "una orden" por herramienta + README de acceso desde cualquier herramienta.
+- [ ] Detección de marcas JSON AIGC (norma china GB 45438-2025) + advertencia legal.
+- [ ] Detector bayesiano SynthID-Text (stdlib) como alternativa al mean-score.
+- [ ] Esquemas MarkLLM extra expuestos (EWD/SWEET/EXP/Unigram).
+- [ ] Heurística multilingüe (español + chino).
+- [ ] Audio comprimido (MP3/M4A vía ffmpeg) + ritmo Morse "AI".
+- [ ] Vídeo: opción `--scrub-audio`.
+- [ ] CI: pip-audit sobre los 5 requirements, pin de torch en ctrlregen, job Python 3.13.
+- [ ] Portapapeles reforzado (auto-clean + verificación).
 
 ## 4. Matriz de cobertura / Coverage matrix
 

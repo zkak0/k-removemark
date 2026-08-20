@@ -33,7 +33,7 @@ Register-ScheduledTask -TaskName "KRemovemarkService" -Action $action -Trigger $
 ## 4. Start it immediately (no reboot needed)
 
 ```powershell
-Start-ScheduledTask -TaskName "WatermarksRemoverService"
+Start-ScheduledTask -TaskName "KRemovemarkService"
 ```
 
 ## 5. Verify
@@ -48,4 +48,4 @@ Should return `{"ok": true, "version": "..."}`.
 
 - Requires Python 3.10+ on PATH.
 - The scheduled task runs at every login going forward — no manual start needed.
-- To stop auto-starting: `Unregister-ScheduledTask -TaskName "WatermarksRemoverService"`
+- To stop auto-starting: `Unregister-ScheduledTask -TaskName "KRemovemarkService"`

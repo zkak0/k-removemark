@@ -149,6 +149,26 @@ class XClipboard(ClipboardBackend):
             return False
 
 
+class XSelClipboard(ClipboardBackend):
+    name = "x11"
+
+    def get(self) -> str | None:
+        return _run_capture(["xsel", "--clipboard", "--output"])
+
+    def set(self, text: str) -> bool:
+        try:
+            proc = subprocess.run(
+                ["xsel", "--clipboard", "--input"],  # noqa: S607
+                input=text,
+                capture_output=True,
+                timeout=10,
+                check=False,
+            )
+            return proc.returncode == 0
+        except (OSError, subprocess.TimeoutExpired):
+            return False
+
+
 def detect_backend() -> ClipboardBackend:
     if sys.platform.startswith("win"):
         return WindowsClipboard()
@@ -157,7 +177,7 @@ def detect_backend() -> ClipboardBackend:
     if _run_capture(["xclip", "-selection", "clipboard", "-o"]) is not None:
         return XClipboard()
     if _run_capture(["xsel", "--clipboard", "--output"]) is not None:
-        return XClipboard()  # xsel-compatible path is not implemented; xclip preferred
+        return XSelClipboard()
     return ClipboardBackend()
 
 

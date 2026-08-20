@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import http.server
 import json
+import socket
 import sys
 import threading
 import time
@@ -538,11 +539,12 @@ def test_rewrite_denies_remote_host_without_opt_in():
 def test_rewrite_blocks_redirect_and_never_sends_key():
     """A 302 from the (loopback) endpoint must not re-send the API key to the
     redirect target — the request must fail instead."""
-    state: dict = {"collector_port": None}
+    state: dict = {"collector_port": None, "redirect_served": 0}
     captured: dict = {}
 
     class Redirector(http.server.BaseHTTPRequestHandler):
         def do_POST(self):
+            state["redirect_served"] += 1
             self.send_response(302)
             self.send_header(
                 "Location",
@@ -569,13 +571,24 @@ def test_rewrite_blocks_redirect_and_never_sends_key():
     state["collector_port"] = collector.server_address[1]
     threading.Thread(target=collector.serve_forever, daemon=True).start()
     threading.Thread(target=redirector.serve_forever, daemon=True).start()
+    # Readiness probe: confirm both sockets are actually accepting before the
+    # request is sent, so a slow thread start cannot race the assertion below.
+    for sock, _ in ((socket.create_connection(redirector.server_address, 2), None),):
+        sock.close()
+    for sock, _ in ((socket.create_connection(collector.server_address, 2), None),):
+        sock.close()
     try:
         with pytest.raises(urllib.error.HTTPError):
             rewrite(
                 "secret text",
                 **_rewrite_http_kwargs(f"http://127.0.0.1:{redirector.server_address[1]}"),
             )
-        time.sleep(0.2)
+        # Bounded wait instead of a fixed sleep: a slow CI collector must still
+        # be caught if it ever receives the redirect (fail fast otherwise).
+        deadline = time.monotonic() + 1.5
+        while time.monotonic() < deadline and not captured:
+            time.sleep(0.05)
+        assert state["redirect_served"] == 1, "redirector never saw the request"
         assert captured == {}, "redirect target received a request (key leak?)"
     finally:
         collector.shutdown()

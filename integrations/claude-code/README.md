@@ -1,8 +1,9 @@
 # Claude Code (plugin marketplace)
 
-Este `plugin.json` expone ambos skills como un plugin instalable:
+Este `plugin.json` (raíz) expone ambos skills como un plugin instalable:
 
 - `/plugin marketplace add <owner>/k-removemark` — desde la raíz del repo
+  (usa `.claude-plugin/marketplace.json`)
 - `/plugin install remove-ai-marks` — después de añadir el marketplace
 
 ## Instalación manual (sin marketplace)

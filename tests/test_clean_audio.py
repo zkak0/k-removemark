@@ -46,8 +46,8 @@ def test_fft_rejects_non_power_of_two():
         pass
 
 
-def test_dominant_tone_finds_carrier():
-    samples = [s / 32768.0 for s in _tone_wav(Path("unused"), 440)]
+def test_dominant_tone_finds_carrier(tmp_path):
+    samples = [s / 32768.0 for s in _tone_wav(tmp_path / "tone.wav", 440)]
     f0 = ca.dominant_tone(samples, RATE)
     assert f0 is not None and 439 <= f0 <= 441
 
@@ -60,8 +60,8 @@ def test_phase_randomization_changes_but_preserves_length():
     assert out != samples
 
 
-def test_notch_carrier_energy():
-    samples = [s / 32768.0 for s in _tone_wav(Path("unused"), 440)]
+def test_notch_carrier_energy(tmp_path):
+    samples = [s / 32768.0 for s in _tone_wav(tmp_path / "tone.wav", 440)]
     before = _energy_at(samples, 440)
     notched, tone = ca.notch_tone(samples, RATE)
     after = _energy_at(notched, 440)

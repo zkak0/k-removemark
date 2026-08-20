@@ -98,3 +98,33 @@ def test_lightweight_preserves_legitimate_bidi_and_emoji_glue():
             check=True,
         )
         assert result.stdout.rstrip("\n") == raw
+
+
+def test_skill_api_key_env_var_matches_server():
+    # The service reads WATERMARKS_SERVER_API_KEY; the skill must instruct the
+    # client to send the same variable, not a name that is never defined.
+    skill_text = (ROOT / "skills" / "remove-ai-marks" / "SKILL.md").read_text(encoding="utf-8")
+    server_text = (ROOT / "service" / "scripts" / "server.py").read_text(encoding="utf-8")
+
+    assert 'WATERMARKS_SERVER_API_KEY' in skill_text
+    assert 'WATERMARKS_SERVICE_API_KEY' not in skill_text
+    assert 'WATERMARKS_SERVER_API_KEY' in server_text
+
+
+def test_vendored_text_clean_behavior_matches_service():
+    # The vendored CLI wrappers differ in code (standalone, dependency-free)
+    # but must behave identically on Layer A cleaning. Guards silent drift.
+    service_cli = [sys.executable, str(ROOT / "service" / "scripts" / "clean_text.py"), "-"]
+    vendored_cli = [sys.executable, str(SKILL / "scripts" / "clean_text.py"), "-"]
+
+    samples = [
+        "Hello\u200b world\u3000 again",
+        "السعر ⁦123 USD⁩‏",
+        "Move ↔️",
+        "plain ascii text, nothing to see",
+        "fa\u200bke\u200bspaces\u200band\u200bzwsp",
+    ]
+    for raw in samples:
+        svc = subprocess.run(service_cli, input=raw, text=True, encoding="utf-8", capture_output=True, check=True)
+        vend = subprocess.run(vendored_cli, input=raw, text=True, encoding="utf-8", capture_output=True, check=True)
+        assert svc.stdout == vend.stdout, f"output drift for {raw!r}"
