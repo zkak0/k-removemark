@@ -24,8 +24,8 @@ ARG C2PATOOL_VERSION=c2patool-v0.27.15
 ARG C2PATOOL_SHA256=7a035b727a6cdda8ad08d98fe94b3c20febee4aea4e7c1de02571b295730faf0
 ARG VERSION=dev
 
-# python:3.14-slim linux/amd64 digest.
-FROM python:3.14-slim@sha256:ce40764625a4ff50df3548277632e7f96c4e77fe75fa848aae9885476e7df5a4
+# python:3.12-slim linux/amd64 digest.
+FROM python:3.12-slim@sha256:876416ecde9a
 
 ARG C2PATOOL_VERSION
 ARG C2PATOOL_SHA256

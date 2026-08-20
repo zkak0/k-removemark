@@ -9,16 +9,11 @@ on:
 
 permissions:
   contents: read
-  # Required for CodeQL to upload SARIF results.
   security-events: write
-  # Required by the SARIF upload step to fetch workflow-run info.
   actions: read
 
 jobs:
   analyze:
-    # Code scanning requires GitHub Advanced Security (orgs) or a public repo;
-    # personal private repos cannot upload SARIF, so only run when public.
-    if: github.event.repository.visibility == 'public'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:

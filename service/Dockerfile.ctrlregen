@@ -19,10 +19,9 @@
 # with setup_ctrlregen.sh.
 ARG NOAI_WATERMARK_REF=b642ae45d20eded52c96d570985eb4e3e427aac8
 
-# python:3.14-slim (multi-arch manifest digest). The ML deps in
-# requirements-ctrlregen.txt are current versions that ship Python 3.14 wheels,
-# so the newest slim base is used, matching the other service images.
-FROM python:3.14-slim@sha256:ce40764625a4ff50df3548277632e7f96c4e77fe75fa848aae9885476e7df5a4
+# python:3.12-slim (multi-arch manifest digest). The ML deps in
+# requirements-ctrlregen.txt are current versions that ship Python 3.12 wheels.
+FROM python:3.12-slim@sha256:876416ecde9a
 
 ARG NOAI_WATERMARK_REF
 
@@ -46,7 +45,7 @@ COPY scripts/clean_ctrlregen.py /app/clean_ctrlregen.py
 COPY scripts/common.py /app/common.py
 
 # torch is installed first (CPU wheels on linux) so the pinned ML deps can
-# resolve against it. Pinned to a stable release with Python 3.14 wheels
+# resolve against it. Pinned to a stable release with Python 3.12 wheels
 # (2.12.x, May 2026); keep in sync with setup_ctrlregen.sh. Model weights
 # are downloaded at runtime, not build time.
 RUN python3 -m pip install --no-cache-dir "pip==26.2.1" \
