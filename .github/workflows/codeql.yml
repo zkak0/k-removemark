@@ -11,6 +11,8 @@ permissions:
   contents: read
   # Required for CodeQL to upload SARIF results.
   security-events: write
+  # Required by the SARIF upload step to fetch workflow-run info.
+  actions: read
 
 jobs:
   analyze:
