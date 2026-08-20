@@ -205,8 +205,8 @@ Nuestro detector keyed y señal sin clave, 100 % CPU, sin LLM.
 - [x] Detector bayesiano SynthID-Text (stdlib) como alternativa al mean-score.
 - [x] Esquemas MarkLLM extra expuestos (Unigram + EXP-edit en stdlib; **EWD/SWEET son opt-ins con modelo**, documentados, no-ZMD).
 - [x] Heurística multilingüe (español + chino).
-- [ ] Audio comprimido (MP3/M4A vía ffmpeg) + ritmo Morse "AI".
-- [ ] Vídeo: opción `--scrub-audio`.
+- [x] Audio comprimido (MP3/M4A vía ffmpeg, `--transcode`) + detector de ritmo periódico Morse-like (`--scan-pulses`).
+- [x] Vídeo: opción `--scrub-audio` (DSP de la pista de audio vía ffmpeg).
 - [ ] CI: pip-audit sobre los 5 requirements, pin de torch en ctrlregen, job Python 3.13.
 - [ ] Portapapeles reforzado (auto-clean + verificación).
 
