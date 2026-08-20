@@ -46,6 +46,17 @@ def test_scrub_visible_without_ffmpeg_is_honest(tmp_path, monkeypatch):
     assert dest.exists()  # metadata strip still happened
 
 
+def test_scrub_audio_without_ffmpeg_is_honest(tmp_path, monkeypatch):
+    src = tmp_path / "clip.mp4"
+    src.write_bytes(_minimal_mp4_with_udta_tag(b"Lavf58.76.100"))
+    dest = tmp_path / "clip_cleaned.mp4"
+    monkeypatch.setattr(cv, "ffmpeg_path", lambda: None)
+    report = cv.clean_video(src, dest, scrub_audio=True)
+    assert report["audio_scrub"]["available"] is False
+    assert "ffmpeg" in report["audio_scrub"]["error"].lower()
+    assert dest.exists()  # metadata strip still happened
+
+
 def test_unsupported_container_refuses(tmp_path):
     src = tmp_path / "clip.mkv"
     src.write_bytes(b"EBML" + b"\x00" * 32)

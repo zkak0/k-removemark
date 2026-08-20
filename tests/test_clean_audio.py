@@ -92,6 +92,43 @@ def test_clean_audio_compressed_refuses_dsp(tmp_path):
     assert "compressed" in report["dsp"]["error"]
 
 
+def test_detect_periodic_pulses_finds_morse_like_rhythm():
+    rate = 8000
+    frame = rate * ca.PULSE_FRAME_MS // 1000
+    samples: list[float] = []
+    for _ in range(6):
+        samples += [0.8] * frame
+        samples += [0.0] * frame
+    res = ca.detect_periodic_pulses(samples, rate)
+    assert res["present"] is True
+    assert res["interval_cv"] <= ca.PULSE_CV_MAX
+    assert res["pulse_count"] >= 4
+
+
+def test_detect_periodic_pulses_ignores_flat_signal():
+    res = ca.detect_periodic_pulses([0.01] * 8000, 8000)
+    assert res["present"] is False
+
+
+def test_clean_audio_scan_pulses(tmp_path):
+    rate = 8000
+    frame = rate * ca.PULSE_FRAME_MS // 1000
+    samples: list[int] = []
+    for _ in range(5):
+        samples += [8000] * frame
+        samples += [0] * frame
+    src = tmp_path / "morse.wav"
+    with wave.open(str(src), "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(rate)
+        w.writeframes(struct.pack(f"<{len(samples)}h", *samples))
+    dest = tmp_path / "morse_cleaned.wav"
+    report = ca.clean_audio(src, dest, scan_pulses=True)
+    assert report["pulses"]["present"] is True
+    assert any("periodic (Morse-like) pulse pattern" in a for a in report["actions"])
+
+
 def test_cli_json(tmp_path):
     import subprocess
 
