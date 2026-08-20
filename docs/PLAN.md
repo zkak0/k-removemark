@@ -207,7 +207,7 @@ Nuestro detector keyed y señal sin clave, 100 % CPU, sin LLM.
 - [x] Heurística multilingüe (español + chino).
 - [x] Audio comprimido (MP3/M4A vía ffmpeg, `--transcode`) + detector de ritmo periódico Morse-like (`--scan-pulses`).
 - [x] Vídeo: opción `--scrub-audio` (DSP de la pista de audio vía ffmpeg).
-- [ ] CI: pip-audit sobre los 5 requirements, pin de torch en ctrlregen, job Python 3.13.
+- [x] CI: pip-audit sobre los 5 requirements, pin de torch en ctrlregen, job Python 3.13.
 - [ ] Portapapeles reforzado (auto-clean + verificación).
 
 ## 4. Matriz de cobertura / Coverage matrix
