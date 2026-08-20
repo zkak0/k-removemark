@@ -34,7 +34,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from text_unicode import clean_text
+from text_unicode import clean_text, inspect_text
 
 log = logging.getLogger("clipboard_daemon")
 
@@ -183,7 +183,11 @@ def detect_backend() -> ClipboardBackend:
 
 def clean_clipboard_text(text: str) -> tuple[str, dict]:
     """Layer A scrub, isolated for tests. Returns (cleaned, stats)."""
-    return clean_text(text)
+    cleaned, stats = clean_text(text)
+    residual = inspect_text(cleaned)
+    stats["residual_suspicious"] = residual.suspicious_total
+    stats["verified_clean"] = residual.suspicious_total == 0
+    return cleaned, stats
 
 
 def main() -> int:
@@ -218,18 +222,22 @@ def main() -> int:
                 cleaned, stats = clean_clipboard_text(text)
                 removed = int(stats.get("removed_count", stats.get("removed", 0)))
                 replaced = int(stats.get("replaced_count", stats.get("replaced", 0)))
+                verified = bool(stats.get("verified_clean"))
                 if removed or replaced:
                     marked = True
                     log.info(
-                        "marks found: %d removed, %d replaced (%d chars)",
+                        "marks found: %d removed, %d replaced (%d chars); "
+                        "post-clean residual=%d verified=%s",
                         removed,
                         replaced,
                         len(text),
+                        int(stats.get("residual_suspicious", 0)),
+                        verified,
                     )
                     if args.beep:
                         print("\a", end="", flush=True)
                     if args.auto_clean and cleaned != text and backend.set(cleaned):
-                        log.info("clipboard rewritten (cleaned text)")
+                        log.info("clipboard rewritten (cleaned text, verified=%s)", verified)
 
             if args.once:
                 break

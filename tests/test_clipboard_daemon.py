@@ -18,6 +18,8 @@ def test_clean_clipboard_strips_invisible_marks():
     cleaned, stats = cd.clean_clipboard_text(text)
     assert cleaned == "helloworld"
     assert stats["removed_count"] >= 2
+    assert stats["verified_clean"] is True
+    assert stats["residual_suspicious"] == 0
 
 
 def test_clean_clipboard_clean_text_untouched():
@@ -25,6 +27,7 @@ def test_clean_clipboard_clean_text_untouched():
     cleaned, stats = cd.clean_clipboard_text(text)
     assert cleaned == text
     assert stats["removed_count"] == 0
+    assert stats["verified_clean"] is True
 
 
 def test_detect_backend_returns_backend():
