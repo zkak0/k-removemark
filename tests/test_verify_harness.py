@@ -20,7 +20,14 @@ def test_harness_passes_default_gates():
 def test_harness_schemes_are_the_three_expected():
     report = vh.run(samples=5, tokens=100)
     names = [r["scheme"] for r in report["results"]]
-    assert names == ["statistical-kgw", "statistical-synthid-mean", "kgw-key-mismatch"]
+    assert names == [
+        "statistical-kgw",
+        "statistical-synthid-mean",
+        "statistical-synthid-bayes",
+        "statistical-unigram",
+        "statistical-kgw-exp",
+        "kgw-key-mismatch",
+    ]
 
 
 def test_key_mismatch_never_fires():
@@ -58,9 +65,9 @@ def test_cli_exit_code_zero_on_pass(tmp_path):
             os.path.join(os.path.dirname(vh.__file__), "verify_harness.py"),
             "run",
             "--samples",
-            "10",
+            "20",
             "--tokens",
-            "100",
+            "200",
             "--out",
             str(out),
         ],

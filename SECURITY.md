@@ -1,54 +1,44 @@
-# Security Policy
+# Política de Seguridad
 
-## Supported versions
+## Versiones soportadas
 
-Security fixes target the latest code on the `main` branch and the most recent
-GitHub Release (when releases exist). Older tags are not maintained.
+Las correcciones de seguridad se aplican al código más reciente en la rama `main` y al GitHub Release más reciente (cuando existan releases). Tags antiguos no se mantienen.
 
-## Reporting a vulnerability
+## Reportar una vulnerabilidad
 
-**Do not open a public issue for security problems.**
+**No abras un issue público para problemas de seguridad.**
 
-Please report vulnerabilities privately via
-**GitHub Security Advisories** — use the "Report a vulnerability" button on
-the repository Security tab.
+Reporta vulnerabilidades de forma privada mediante **GitHub Security Advisories** — usa el botón "Report a vulnerability" en la pestaña Security del repositorio.
 
-Include:
+Incluye:
 
-- A description of the issue and its impact
-- Steps to reproduce or a proof of concept when safe to share
-- Affected version or commit if known
+- Una descripción del problema y su impacto
+- Pasos para reproducir o prueba de concepto cuando sea seguro compartirla
+- Versión o commit afectado si se conoce
 
-## What to expect
+## Qué esperar
 
-- Acknowledgement when a maintainer has seen the report
-- An initial assessment of severity and scope
-- A coordinated fix and disclosure timeline when the report is valid
+- Confirmación cuando un mantenedor haya visto el reporte
+- Una evaluación inicial de severidad y alcance
+- Un cronograma coordinado de corrección y divulgación cuando el reporte sea válido
 
-We will not take legal action against good-faith research that follows this
-policy and avoids privacy harm, service disruption, or data destruction.
+No tomaremos acciones legales contra investigación de buena fe que siga esta política y evite daño a la privacidad, interrupción del servicio o destrucción de datos.
 
-## Scope notes for this project
+## Notas de alcance para este proyecto
 
-This project is a local agent skill and a set of Python scripts that
-inspect and clean text and image files. Reports that matter most include:
+Este proyecto es una skill de agente local y un conjunto de scripts Python que inspeccionan y limpian archivos de texto e imagen. Los reportes que más importan incluyen:
 
-- Path traversal or unsafe writes outside intended output paths
-- Command injection when optional tools (`c2patool`, `exiftool`) are invoked
-- Parser crashes or resource exhaustion on crafted images/text that affect
-  the host beyond normal process failure
-- Accidental leakage of user file contents in logs, error messages, or
-  diagnostics that ship with the skill
+- Recorrido de ruta (path traversal) o escrituras inseguras fuera de las rutas de salida previstas
+- Inyección de comandos al invocar herramientas opcionales (`c2patool`, `exiftool`)
+- Fallos del parser o agotamiento de recursos en imágenes/texto diseñados que afecten al host más allá del fallo normal del proceso
+- Fuga accidental de contenidos de archivos de usuario en logs, mensajes de error o diagnósticos que viajen con la skill
 
-Out of scope (unless they cause a concrete security impact in this project):
+## Fuera de alcance (salvo que causen impacto de seguridad concreto en este proyecto)
 
-- Bypassing AI provenance marks for fraud, copyright evasion, or illegal
-  non-disclosure (see skill `references/ethics.md`)
-- Issues only in third-party tools (`c2patool`, `exiftool`, agents)
-- Social engineering of individual users
+- Eludir marcas de procedencia de IA para fraude, evasión de copyright o incumplimiento ilegal de divulgación (ver skill `references/ethics.md`)
+- Problemas solo en herramientas de terceros (`c2patool`, `exiftool`, agentes)
+- Ingeniería social contra usuarios individuales
 
-## Prefer private disclosure
+## Divulgación preferentemente privada
 
-After a fix is released, we may credit reporters who want public credit.
-Do not publish exploit details until a fixed release is available, unless we
-agree otherwise.
+Tras publicar una corrección, podemos acreditar a los reportadores que deseen crédito público. No publiques detalles de explotación hasta que haya una release corregida disponible, salvo que acordemos lo contrario.

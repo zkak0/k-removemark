@@ -1,81 +1,63 @@
-# Contributing to this project
+# Cómo contribuir a este proyecto
 
-Thanks for helping keep the skill accurate and the cleaners reliable. The
-project is a small Python skill (`skills/remove-ai-marks/`) plus tests —
-focused PRs land fastest.
+Gracias por ayudar a mantener la skill precisa y los limpiadores fiables. El proyecto es una skill pequeña de Python (`skills/remove-ai-marks/`) más tests — los PRs enfocados se integran más rápido.
 
-## Who can do what
+## Quién puede hacer qué
 
-| Action | Who |
+| Acción | Quién |
 | --- | --- |
-| Open issues | Anyone |
-| Suggest a release | Anyone (use the **Release suggestion** issue template) |
-| Open pull requests | Anyone (fork the repo) |
-| Approve and merge pull requests | Maintainer only (`@your-org`) |
+| Abrir issues | Cualquiera |
+| Sugerir un release | Cualquiera (usa la plantilla **Sugerencia de release**) |
+| Abrir pull requests | Cualquiera (haz fork del repo) |
+| Aprobar y fusionar pull requests | Solo el mantenedor (`@zkak0`) |
 
-`main` is protected. A change needs a pull request, a passing **CI** check
-(`test`), and an approving review from the code owner before merge. Only the
-maintainer can give that approval. Direct pushes to `main` are blocked for
-non-admins.
+La rama `main` está protegida. Un cambio requiere un pull request, que pase **CI** (`test`), y una revisión aprobatoria del propietario del código antes de fusionar. Solo el mantenedor puede dar esa aprobación. Los pushes directos a `main` están bloqueados para no administradores.
 
-To suggest a release without a code change: open a **Release suggestion**
-issue.
+Para sugerir un release sin cambio de código: abre un issue de **Sugerencia de release**.
 
-## Prerequisites
+## Requisitos previos
 
-- **Python 3.10+** (stdlib only for the skill scripts; optional rewrite backends
-  use HTTP to local Ollama / OpenAI-compatible endpoints)
-- From the repo root: `python3 -m pytest -q` should pass before you open a PR
-- Optional for manual file checks: [`c2patool`](https://github.com/contentauth/c2pa-rs/tree/main/cli), [`exiftool`](https://exiftool.org/) (PDF)
+- **Python 3.10+** (solo stdlib para los scripts de la skill; backends opcionales de reescritura usan HTTP a Ollama / endpoints compatibles con OpenAI)
+- Desde la raíz del repo: `python3 -m pytest -q` debe pasar antes de abrir un PR
+- Opcional para revisiones manuales de archivos: [`c2patool`](https://github.com/contentauth/c2pa-rs/tree/main/cli), [`exiftool`](https://exiftool.org/) (PDF)
 
-## Layout
+## Estructura del repositorio
 
-| Path | Role |
+| Ruta | Rol |
 | --- | --- |
-| `skills/remove-ai-marks/SKILL.md` | Agent skill entry (workflow, ethics) — remote client over HTTP |
-| `skills/remove-ai-marks/references/` | Vendors, mark classes, matrix, ethics |
-| `service/scripts/` | Layer A/B hooks + image/container cleaners + `server.py` HTTP service |
-| `service/Dockerfile*` | Container images (core + optional backends) |
-| `compose.yaml` | Local full-stack bring-up |
-| `tests/` | Pytest suite and fixtures |
-| `.github/workflows/ci.yml` | CI job `test` |
-| `.github/workflows/release-images.yml` | GHCR image publishing on `v*` tags |
+| `skills/remove-ai-marks/SKILL.md` | Entrada de la skill del agente (flujo de trabajo, ética) — cliente remoto sobre HTTP |
+| `skills/remove-ai-marks/references/` | Vendors, clases de marcas, matriz, ética |
+| `service/scripts/` | Hooks Layer A/B + limpiadores de imagen/contenedores + `server.py` servicio HTTP |
+| `service/Dockerfile*` | Imágenes de contenedor (core + backends opcionales) |
+| `compose.yaml` | Levantar stack completo en local |
+| `tests/` | Suite pytest y fixtures |
+| `.github/workflows/ci.yml` | Job CI `test` |
+| `.github/workflows/release-images.yml` | Publicación de imágenes GHCR en tags `v*` |
 
-## Layers (what to change where)
+## Capas (dónde cambiar qué)
 
-1. **Layer A (Unicode / format controls)** — deterministic scripts under
-   `service/scripts/` (`text_unicode.py`, `clean_text.py`, `inspect_text.py`). Prefer
-   tests with fixtures in `tests/fixtures/`.
-2. **Layer B (statistical rewrite)** — guidance in `SKILL.md` plus optional
-   `rewrite_text.py` (print-prompt default; ollama / openai-compatible). No
-   bundled model. Keep ethics-aware.
-3. **Files (C2PA / EXIF / XMP / props)** — `image_meta.py` (PNG/JPEG/AVIF/HEIC/...),
-   `container_meta.py` (SVG/PDF/DOCX/ODT/HTML/MD), `av_meta.py` (MP4/MOV/WAV/MP3),
-   unified `inspect_file.py` / `clean_file.py`. Preserve document body / pixels /
-   waveform; strip provenance metadata only.
+1. **Layer A (Unicode / controles de formato)** — scripts deterministas bajo `service/scripts/` (`text_unicode.py`, `clean_text.py`, `inspect_text.py`). Preferir tests con fixtures en `tests/fixtures/`.
+2. **Layer B (reescritura estadística)** — guía en `SKILL.md` más `rewrite_text.py` opcional (prompt por defecto; ollama / openai-compatible). Sin modelo incluido. Mantener conciencia ética.
+3. **Archivos (C2PA / EXIF / XMP / props)** — `image_meta.py` (PNG/JPEG/AVIF/HEIC/...), `container_meta.py` (SVG/PDF/DOCX/ODT/HTML/MD), `av_meta.py` (MP4/MOV/WAV/MP3), `inspect_file.py` / `clean_file.py` unificados. Preservar cuerpo del documento / píxeles / forma de onda; eliminar solo metadatos de procedencia.
 
-## Checklist for a change
+## Checklist para un cambio
 
-- [ ] Behaviour matches `SKILL.md` / `references/removal-matrix.md` when relevant
-- [ ] Unit tests updated or added under `tests/`
-- [ ] `python3 -m pytest -q` passes
-- [ ] Docs updated (README and/or skill references) if user-facing behaviour
-      changes
-- [ ] No drive-by refactors unrelated to the fix or feature
+- [ ] El comportamiento coincide con `SKILL.md` / `references/removal-matrix.md` cuando sea relevante
+- [ ] Tests unitarios actualizados o añadidos bajo `tests/`
+- [ ] `python3 -m pytest -q` pasa
+- [ ] Documentación actualizada (README y/o referencias de la skill) si cambia comportamiento de cara al usuario
+- [ ] Sin refactorizaciones ajenas al fix o feature
 
-## PR expectations
+## Expectativas del PR
 
-- Stay focused and match existing style (stdlib-first scripts, clear CLI flags)
-- Do not commit secrets, private user files, or large binary fixtures unless
-  needed and redacted
-- Respect `references/ethics.md`: this tool is for content the user owns
+- Mantenerse enfocado y seguir el estilo existente (scripts stdlib-first, flags CLI claros)
+- No commitear secretos, archivos privados de usuario, o fixtures binarios grandes salvo que sean necesarios y estén redactados
+- Respetar `references/ethics.md`: esta herramienta es para contenido que el usuario posee o está autorizado a procesar
 
-Questions? Open an issue describing the input type (text / image / document)
-and which layer failed or is missing.
+## Comunidad
 
-## Community
+- [Código de Conducta](CODE_OF_CONDUCT.md) — comportamiento esperado en el proyecto
+- [Política de seguridad](SECURITY.md) — cómo reportar vulnerabilidades de forma privada
+- Plantillas: [Bug report](.github/ISSUE_TEMPLATE/bug_report.md) y [Feature request](.github/ISSUE_TEMPLATE/feature_request.md)
 
-- [Code of Conduct](CODE_OF_CONDUCT.md) — expected behaviour in the project
-- [Security policy](SECURITY.md) — how to report vulnerabilities privately
-- [Bug report](.github/ISSUE_TEMPLATE/bug_report.md) and
-  [feature request](.github/ISSUE_TEMPLATE/feature_request.md) templates
+¿Dudas? Abre un issue describiendo el tipo de entrada (texto / imagen / documento) y qué capa falla o falta.
