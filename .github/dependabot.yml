@@ -30,10 +30,10 @@ updates:
     ignore:
       - dependency-name: "tokenizers"
 
-  # Docker base image (Dockerfile.synthid): tracks the digest-pinned
+  # Docker base images (service/Dockerfile*): tracks the digest-pinned
   # python:3.14-slim base. Monthly — digest churn is low-signal weekly.
   - package-ecosystem: "docker"
-    directory: "/"
+    directory: "/service"
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 3
