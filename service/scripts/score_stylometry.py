@@ -97,6 +97,55 @@ AI_PHRASE_PATTERNS: tuple[tuple[str, str, float], ...] = (
     (r"\bi\s+hope\s+this\s+helps\b", "I hope this helps", 1.2),
 )
 
+# Spanish AI cadence markers — formulaic connectors, hedges and filler that
+# frontier LLMs over-produce in Spanish just as in English.
+AI_PHRASE_PATTERNS_ES: tuple[tuple[str, str, float], ...] = (
+    (r"\ben\s+conclusi[oó]n\b", "en conclusión", 0.8),
+    (r"\ben\s+resumen\b", "en resumen", 0.8),
+    (r"\bes\s+(?:importante|crucial|fundamental|esencial)\s+(?:destacar|señalar|mencionar|tener\s+en\s+cuenta|recordar)\b", "es importante/crucial destacar", 0.9),
+    (r"\bcabe\s+(?:destacar|señalar|mencionar)\b", "cabe destacar/señalar", 0.9),
+    (r"\bno\s+s[oó]lo\b[\w\s,áéíóúñ]+\bsino\s+(?:tambi[eé]n\s+)?(?:que\s+)?", "no solo ... sino también", 0.8),
+    (r"\bjuega(?:n)?\s+un\s+(?:papel|rol)\s+(?:clave|crucial|fundamental)\b", "juega un papel crucial", 1.0),
+    (r"\ben\s+(?:el\s+)?(?:mundo|panorama|escenario)\s+actual\b", "en el mundo actual", 1.2),
+    (r"\bcomo\s+(?:se\s+)?(?:mencion[oó]|señal[oó]|dij[eé])" r"\s+anteriormente\b", "como se mencionó anteriormente", 0.8),
+    (r"\ben\s+definitiva\b", "en definitiva", 0.6),
+    (r"\bes\s+relevante\s+mencionar\b", "es relevante mencionar", 0.9),
+    (r"\beste\s+(?:art[ií]culo|an[aá]lisis|ensayo|post)\s+(?:explora|analiza|examina|aborda)\b", "este artículo explora/analiza", 1.1),
+    (r"\bexplorar(?:emos)?\s+las\s+complejidades\b", "explorar las complejidades", 1.0),
+    (r"\bfomentar\s+(?:una\s+)?cultura\b", "fomentar una cultura", 0.9),
+    (r"\ben\s+el\s+[aá]mbito\s+de\b", "en el ámbito de", 0.6),
+    (r"\bimpulsar(?:á|a)?\s+(?:la\s+)?(?:transformaci[oó]n|innovaci[oó]n)\b", "impulsar la transformación", 0.8),
+    (r"\ben\s+este\s+(?:sentido|contexto)\b", "en este sentido/contexto", 0.6),
+)
+
+# Chinese AIGC cadence markers. Chinese has no whitespace word boundaries, so
+# patterns are plain literals matched anywhere (no \b anchors).
+AI_PHRASE_PATTERNS_ZH: tuple[tuple[str, str, float], ...] = (
+    (r"综上所述", "综上所述 (in summary)", 0.8),
+    (r"总而言之", "总而言之 (in conclusion)", 0.8),
+    (r"需要注意的是", "需要注意的是 (note that)", 0.9),
+    (r"值得注意的是", "值得注意的是 (worth noting)", 0.9),
+    (r"总的来说", "总的来说 (overall)", 0.7),
+    (r"首先", "首先 (firstly)", 0.6),
+    (r"其次", "其次 (secondly)", 0.6),
+    (r"最后", "最后 (finally)", 0.5),
+    (r"此外", "此外 (moreover)", 0.6),
+    (r"本文将(?:探讨|从|深入|重点|分析)", "本文将探讨 (this article explores)", 1.1),
+    (r"本文从", "本文从 (this article from)", 0.9),
+    (r"具有重要意义", "具有重要意义 (has important significance)", 1.0),
+    (r"扮演(?:着|了)?重要(?:的)?角色", "扮演重要角色 (plays an important role)", 1.0),
+    (r"在现代社会中", "在现代社会中 (in modern society)", 1.2),
+    (r"随着.{1,12}的发展", "随着...的发展 (with the development of)", 0.9),
+    (r"为用户提供", "为用户提供 (provide users)", 0.8),
+    (r"助力", "助力 (empower/boost)", 0.7),
+    (r"赋能", "赋能 (empower)", 0.7),
+    (r"智能化", "智能化 (intelligentization)", 0.6),
+    (r"推动.{1,12}的发展", "推动...的发展 (promote the development of)", 0.8),
+    (r"促进", "促进 (promote)", 0.5),
+)
+
+RE_CJK = re.compile(r"[\u4e00-\u9fff]")
+
 RE_SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9\"'(\[])")
 RE_WORDS = re.compile(r"\b[\w'-]+\b", re.UNICODE)
 
@@ -169,14 +218,20 @@ def extract_sentences(text: str) -> list[str]:
     if not raw_text.strip():
         return []
 
-    chunks = re.split(r"(?<=[.!?])\s+|\n+", raw_text)
+    chunks = re.split(r"(?<=[.!?])\s+|(?<=[\u3002\uff01\uff1f\uff1b])|\n+", raw_text)
     sentences = [s.strip() for s in chunks if s.strip()]
     return sentences
 
 
 def extract_words(text: str) -> list[str]:
-    """Extract normalized alphanumeric word tokens."""
-    return [w.lower() for w in RE_WORDS.findall(text)]
+    """Extract normalized word tokens; CJK runs become per-character tokens."""
+    words: list[str] = []
+    for w in RE_WORDS.findall(text):
+        if RE_CJK.search(w):
+            words.extend(RE_CJK.findall(w))
+        else:
+            words.append(w.lower())
+    return words
 
 
 def compute_burstiness(sentences: list[str]) -> tuple[float, float, float | None]:
@@ -232,9 +287,13 @@ def compute_mattr(words: list[str], window_size: int = 50) -> float:
 
 
 def scan_ai_phrases(text: str) -> list[MarkerMatch]:
-    """Find and tally high-frequency AI cadence phrases."""
+    """Find and tally high-frequency AI cadence phrases (EN, ES, ZH)."""
     matches: list[MarkerMatch] = []
-    for pattern, label, weight in AI_PHRASE_PATTERNS:
+    for pattern, label, weight in (
+        *AI_PHRASE_PATTERNS,
+        *AI_PHRASE_PATTERNS_ES,
+        *AI_PHRASE_PATTERNS_ZH,
+    ):
         found_spans = []
         for m in re.finditer(pattern, text, re.IGNORECASE):
             found_spans.append(m.group(0))
