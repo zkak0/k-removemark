@@ -14,8 +14,8 @@
 #   - runs as an unprivileged user (a parser bug in a crafted image can no
 #     longer write files as root inside the container)
 
-# python:3.14-slim linux/amd64 digest.
-FROM python:3.14-slim@sha256:ce40764625a4ff50df3548277632e7f96c4e77fe75fa848aae9885476e7df5a4
+# python:3.12-slim linux/amd64 digest.
+FROM python:3.12-slim@sha256:876416ecde9a
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
