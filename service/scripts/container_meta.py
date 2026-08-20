@@ -18,6 +18,7 @@ from typing import Any
 
 from common import (
     classify_finding_confidence,
+    parse_aigc_json_marks,
     safe_arg,
     safe_write_bytes,
     safe_write_text,
@@ -209,6 +210,9 @@ def _blob_hits(blob: bytes) -> tuple[bool, bool, list[str]]:
             label = n.decode("ascii", errors="replace")
             if label not in {f.split(":", 1)[-1] for f in findings}:
                 findings.append(f"ai:{label}")
+    for aigc in parse_aigc_json_marks(blob):
+        has_ai = True
+        findings.append(aigc)
     return has_c2pa, has_ai or has_c2pa, findings[:30]
 
 

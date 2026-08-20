@@ -5,6 +5,7 @@ from __future__ import annotations
 import contextlib
 import json
 import os
+import re
 import sys
 import tempfile
 from pathlib import Path
@@ -360,6 +361,7 @@ def classify_finding_confidence(finding: str) -> str:
             "trainedalgorithmicmedia",
             "compositewithtrainedalgorithmicmedia",
             "softwareagent",
+            "aigc (gb 45438-2025)",
         )
     ):
         return "confirmed"
@@ -406,6 +408,44 @@ def classify_finding_confidence(finding: str) -> str:
         return "probable"
 
     return "informational"
+
+
+_AIGC_JSON_OBJECT_RE = re.compile(rb'"AIGC"\s*:\s*\{', re.I)
+_AIGC_FIELD_RE = re.compile(
+    rb'"(Label|ContentProducer|ProduceID|ContentPropagator|PropagateID|'
+    rb'ReservedCode1|ReservedCode2)"\s*:\s*"((?:[^"\\]|\\.)*)"',
+    re.I,
+)
+_AIGC_LABEL_TEXT = {
+    b"1": "belongs to AI-generated content (Label=1)",
+    b"2": "possibly AI-generated content (Label=2)",
+    b"3": "suspected AI-generated content (Label=3)",
+}
+
+
+def parse_aigc_json_marks(blob: bytes) -> list[str]:
+    """Find GB 45438-2025 file-metadata implicit labels in raw bytes.
+
+    The mandatory implicit-label value is a JSON object
+    ``{"AIGC": {"Label":..., "ContentProducer":..., ...}}`` embedded in XMP,
+    EXIF or container metadata. Returns verified findings carrying the Label
+    value (1 = is, 2 = possibly, 3 = suspected) and, when present, the
+    producer id.
+    """
+    findings: list[str] = []
+    for m in _AIGC_JSON_OBJECT_RE.finditer(blob):
+        end = blob.find(b"}", m.end())
+        if end == -1 or end - m.end() > 4096:
+            continue
+        obj = blob[m.start() : end]
+        fields = {k.lower(): v for k, v in _AIGC_FIELD_RE.findall(obj)}
+        label = fields.get(b"label")
+        label_txt = _AIGC_LABEL_TEXT.get(label, "AIGC label present")
+        producer = fields.get(b"contentproducer")
+        if producer:
+            label_txt += f", producer={producer.decode('utf-8', 'replace')[:64]}"
+        findings.append(f"AIGC (GB 45438-2025) metadata: {label_txt}")
+    return findings
 
 
 def cleaned_path(src: Path, suffix: str = ".cleaned") -> Path:

@@ -23,6 +23,7 @@ from urllib.parse import urlparse
 
 from common import (
     classify_finding_confidence,
+    parse_aigc_json_marks,
     safe_arg,
     safe_write_bytes,
     subprocess_preexec_fn,
@@ -359,6 +360,9 @@ def inspect_png(data: bytes) -> tuple[bool, bool, list[str]]:
     if whole and not has_c2pa:
         has_c2pa = True
         findings.append(f"byte-scan C2PA markers: {', '.join(whole[:6])}")
+    for aigc in parse_aigc_json_marks(data):
+        has_ai = True
+        findings.append(aigc)
     return has_c2pa, has_ai or has_c2pa, findings
 
 
@@ -414,6 +418,9 @@ def inspect_jpeg(data: bytes) -> tuple[bool, bool, list[str]]:
     if whole and not has_c2pa:
         has_c2pa = True
         findings.append(f"byte-scan C2PA markers: {', '.join(whole[:6])}")
+    for aigc in parse_aigc_json_marks(data):
+        has_ai = True
+        findings.append(aigc)
     return has_c2pa, has_ai or has_c2pa, findings
 
 

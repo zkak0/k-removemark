@@ -89,6 +89,36 @@ def test_ai_phrase_scanner():
     assert "a testament to" in matched_labels
 
 
+def test_multilingual_ai_phrase_scanner():
+    es = (
+        "Este artículo explora las complejidades del mundo actual. "
+        "En conclusión, es importante destacar que juega un papel crucial. "
+        "Cabe señalar que no solo impulsa la innovación sino también fomenta una cultura."
+    )
+    es_labels = [m.phrase for m in scan_ai_phrases(es)]
+    assert "este artículo explora/analiza" in es_labels
+    assert "en conclusión" in es_labels
+    assert "es importante/crucial destacar" in es_labels
+    assert "juega un papel crucial" in es_labels
+    assert "cabe destacar/señalar" in es_labels
+
+    zh = "综上所述，本文将从多个角度探讨人工智能在现代社会中的发展。此外，赋能用户具有重要意义。"
+    zh_labels = [m.phrase for m in scan_ai_phrases(zh)]
+    assert "综上所述 (in summary)" in zh_labels
+    assert "本文将探讨 (this article explores)" in zh_labels
+    assert "赋能 (empower)" in zh_labels
+    assert "具有重要意义 (has important significance)" in zh_labels
+
+
+def test_cjk_word_and_sentence_extraction():
+    words = extract_words("人工智能改变了世界。")
+    assert len(words) >= 8
+    assert "人" in words
+    assert "工" in words
+    sentences = extract_sentences("第一句。第二句！第三句？")
+    assert len(sentences) == 3
+
+
 def test_short_text_floor():
     short_text = "This is a very short text with only nine words."
     report = score_text_stylometry(short_text)
