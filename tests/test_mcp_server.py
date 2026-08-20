@@ -20,7 +20,10 @@ def _msg(method: str, msg_id=1, params=None) -> dict:
 
 def test_initialize_handshake_echoes_known_version():
     reply = mcp_server.handle_message(
-        _msg("initialize", params={"protocolVersion": "2025-03-26", "capabilities": {}, "clientInfo": {}})
+        _msg(
+            "initialize",
+            params={"protocolVersion": "2025-03-26", "capabilities": {}, "clientInfo": {}},
+        )
     )
     assert reply["id"] == 1
     assert reply["result"]["protocolVersion"] == "2025-03-26"
@@ -64,7 +67,9 @@ def test_detect_text_proxies_text_as_base64(monkeypatch):
         return {"ok": True, "detections": []}
 
     monkeypatch.setattr(mcp_server, "_http_json", fake_http_json)
-    reply = mcp_server.handle_message(_msg("tools/call", params={"name": "detect_text", "arguments": {"text": "Hello \u200b"}}))
+    reply = mcp_server.handle_message(
+        _msg("tools/call", params={"name": "detect_text", "arguments": {"text": "Hello \u200b"}})
+    )
     assert not reply["result"]["isError"]
     assert seen["path"] == "/detect"
     assert seen["body"]["name"] == "stdin.txt"
@@ -77,7 +82,9 @@ def test_detect_text_requires_text(monkeypatch):
         raise AssertionError("should not reach the service")
 
     monkeypatch.setattr(mcp_server, "_http_json", fake_http_json)
-    reply = mcp_server.handle_message(_msg("tools/call", params={"name": "detect_text", "arguments": {"text": ""}}))
+    reply = mcp_server.handle_message(
+        _msg("tools/call", params={"name": "detect_text", "arguments": {"text": ""}})
+    )
     assert reply["result"]["isError"]
     assert "non-empty" in reply["result"]["content"][0]["text"]
 
@@ -88,7 +95,13 @@ def test_clean_rejects_unknown_option(monkeypatch):
 
     monkeypatch.setattr(mcp_server, "_http_json", fake_http_json)
     reply = mcp_server.handle_message(
-        _msg("tools/call", params={"name": "clean", "arguments": {"content": "aGk=", "name": "a.txt", "options": {"nope": True}}})
+        _msg(
+            "tools/call",
+            params={
+                "name": "clean",
+                "arguments": {"content": "aGk=", "name": "a.txt", "options": {"nope": True}},
+            },
+        )
     )
     assert reply["result"]["isError"]
     assert "nope" in reply["result"]["content"][0]["text"]
@@ -99,7 +112,12 @@ def test_tool_error_is_surfaced_as_iserror(monkeypatch):
         raise RuntimeError("service /detect returned 500")
 
     monkeypatch.setattr(mcp_server, "_http_json", boom)
-    reply = mcp_server.handle_message(_msg("tools/call", params={"name": "inspect", "arguments": {"content": "aGk=", "name": "x.bin"}}))
+    reply = mcp_server.handle_message(
+        _msg(
+            "tools/call",
+            params={"name": "inspect", "arguments": {"content": "aGk=", "name": "x.bin"}},
+        )
+    )
     assert reply["result"]["isError"]
     assert "500" in reply["result"]["content"][0]["text"]
 

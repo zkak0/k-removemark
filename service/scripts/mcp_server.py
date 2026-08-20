@@ -64,7 +64,10 @@ TOOLS = [
                     "type": "string",
                     "description": "Base64-encoded file bytes (use encode_file for help)",
                 },
-                "name": {"type": "string", "description": "Original filename; extension routes format"},
+                "name": {
+                    "type": "string",
+                    "description": "Original filename; extension routes format",
+                },
             },
             "required": ["content", "name"],
         },
@@ -120,7 +123,9 @@ def _http_json(path: str, body: dict | None = None, timeout: float = 10.0) -> di
         headers["Authorization"] = f"Bearer {API_KEY}"
     data = None if body is None else json.dumps(body).encode("utf-8")
     # S310: scheme is validated just above (http/https only).
-    req = urllib.request.Request(url, data=data, headers=headers, method="GET" if body is None else "POST")  # noqa: S310
+    req = urllib.request.Request(  # noqa: S310
+        url, data=data, headers=headers, method="GET" if body is None else "POST"
+    )
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:  # noqa: S310
             return json.loads(resp.read().decode("utf-8"))

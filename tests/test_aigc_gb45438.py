@@ -69,12 +69,12 @@ def test_parse_aigc_json_marks_label_and_producer():
 
 
 def test_parse_aigc_json_marks_label_values():
-    assert "Label=2" in parse_aigc_json_marks(
-        b'{"AIGC": {"Label": "2", "ContentProducer": "x"}}'
-    )[0]
-    assert "Label=3" in parse_aigc_json_marks(
-        b'{"AIGC": {"Label": "3", "ContentProducer": "x"}}'
-    )[0]
+    assert (
+        "Label=2" in parse_aigc_json_marks(b'{"AIGC": {"Label": "2", "ContentProducer": "x"}}')[0]
+    )
+    assert (
+        "Label=3" in parse_aigc_json_marks(b'{"AIGC": {"Label": "3", "ContentProducer": "x"}}')[0]
+    )
     assert parse_aigc_json_marks(b"nothing to see here") == []
 
 
@@ -94,9 +94,7 @@ def test_inspect_jpeg_flags_aigc():
 
 
 def test_container_blob_hits_flags_aigc():
-    _, has_ai, findings = _blob_hits(
-        json.dumps(AIGC_JSON, ensure_ascii=False).encode("utf-8")
-    )
+    _, has_ai, findings = _blob_hits(json.dumps(AIGC_JSON, ensure_ascii=False).encode("utf-8"))
     assert has_ai
     assert any("GB 45438-2025" in f for f in findings)
 

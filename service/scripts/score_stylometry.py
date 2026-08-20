@@ -102,19 +102,43 @@ AI_PHRASE_PATTERNS: tuple[tuple[str, str, float], ...] = (
 AI_PHRASE_PATTERNS_ES: tuple[tuple[str, str, float], ...] = (
     (r"\ben\s+conclusi[oó]n\b", "en conclusión", 0.8),
     (r"\ben\s+resumen\b", "en resumen", 0.8),
-    (r"\bes\s+(?:importante|crucial|fundamental|esencial)\s+(?:destacar|señalar|mencionar|tener\s+en\s+cuenta|recordar)\b", "es importante/crucial destacar", 0.9),
+    (
+        r"\bes\s+(?:importante|crucial|fundamental|esencial)\s+(?:destacar|señalar|mencionar|tener\s+en\s+cuenta|recordar)\b",
+        "es importante/crucial destacar",
+        0.9,
+    ),
     (r"\bcabe\s+(?:destacar|señalar|mencionar)\b", "cabe destacar/señalar", 0.9),
-    (r"\bno\s+s[oó]lo\b[\w\s,áéíóúñ]+\bsino\s+(?:tambi[eé]n\s+)?(?:que\s+)?", "no solo ... sino también", 0.8),
-    (r"\bjuega(?:n)?\s+un\s+(?:papel|rol)\s+(?:clave|crucial|fundamental)\b", "juega un papel crucial", 1.0),
+    (
+        r"\bno\s+s[oó]lo\b[\w\s,áéíóúñ]+\bsino\s+(?:tambi[eé]n\s+)?(?:que\s+)?",
+        "no solo ... sino también",
+        0.8,
+    ),
+    (
+        r"\bjuega(?:n)?\s+un\s+(?:papel|rol)\s+(?:clave|crucial|fundamental)\b",
+        "juega un papel crucial",
+        1.0,
+    ),
     (r"\ben\s+(?:el\s+)?(?:mundo|panorama|escenario)\s+actual\b", "en el mundo actual", 1.2),
-    (r"\bcomo\s+(?:se\s+)?(?:mencion[oó]|señal[oó]|dij[eé])" r"\s+anteriormente\b", "como se mencionó anteriormente", 0.8),
+    (
+        r"\bcomo\s+(?:se\s+)?(?:mencion[oó]|señal[oó]|dij[eé])" r"\s+anteriormente\b",
+        "como se mencionó anteriormente",
+        0.8,
+    ),
     (r"\ben\s+definitiva\b", "en definitiva", 0.6),
     (r"\bes\s+relevante\s+mencionar\b", "es relevante mencionar", 0.9),
-    (r"\beste\s+(?:art[ií]culo|an[aá]lisis|ensayo|post)\s+(?:explora|analiza|examina|aborda)\b", "este artículo explora/analiza", 1.1),
+    (
+        r"\beste\s+(?:art[ií]culo|an[aá]lisis|ensayo|post)\s+(?:explora|analiza|examina|aborda)\b",
+        "este artículo explora/analiza",
+        1.1,
+    ),
     (r"\bexplorar(?:emos)?\s+las\s+complejidades\b", "explorar las complejidades", 1.0),
     (r"\bfomentar\s+(?:una\s+)?cultura\b", "fomentar una cultura", 0.9),
     (r"\ben\s+el\s+[aá]mbito\s+de\b", "en el ámbito de", 0.6),
-    (r"\bimpulsar(?:á|a)?\s+(?:la\s+)?(?:transformaci[oó]n|innovaci[oó]n)\b", "impulsar la transformación", 0.8),
+    (
+        r"\bimpulsar(?:á|a)?\s+(?:la\s+)?(?:transformaci[oó]n|innovaci[oó]n)\b",
+        "impulsar la transformación",
+        0.8,
+    ),
     (r"\ben\s+este\s+(?:sentido|contexto)\b", "en este sentido/contexto", 0.6),
 )
 
