@@ -62,11 +62,10 @@ jobs:
       - name: Audit dependencies (pip-audit)
         if: matrix.os == 'ubuntu-latest'
         run: |
-          python -m pip_audit -r requirements-dev.txt \
-            -r service/scripts/requirements-synthid-scorer.txt \
-            -r service/scripts/requirements-ctrlregen.txt \
-            -r service/scripts/requirements-markdiffusion.txt \
-            -r service/scripts/requirements-markllm.txt
+          python -m pip_audit -r requirements-dev.txt
+          # Optional backend requirements are installed in dedicated venvs
+          # (setup_*.sh / Dockerfile.*) and have conflicting torch pins;
+          # audit them separately if needed.
 
   lint:
     runs-on: ubuntu-latest
