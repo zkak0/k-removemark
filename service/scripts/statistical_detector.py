@@ -120,9 +120,7 @@ def _p_value(z: float) -> float:
     return 0.5 * math.erfc(z / math.sqrt(2.0))
 
 
-def _llr_constants(
-    gamma: float, delta: float
-) -> tuple[float, float, float, float]:
+def _llr_constants(gamma: float, delta: float) -> tuple[float, float, float, float]:
     """Per-token log-likelihood ratios for the KGW-style boosted step model.
 
     Under the null the per-token g-score is uniform on [0, 1). Under the
@@ -398,8 +396,10 @@ class ExponentialDetector:
         context: int | None = None,
     ) -> None:
         self._key = key if key is not None else DEFAULT_KEY
-        self._beta = beta if beta is not None else float(
-            os.environ.get("WATERMARKS_STATISTICAL_BETA", "2.0")
+        self._beta = (
+            beta
+            if beta is not None
+            else float(os.environ.get("WATERMARKS_STATISTICAL_BETA", "2.0"))
         )
         self._threshold = threshold if threshold is not None else DEFAULT_THRESHOLD
         self._context = context if context is not None else DEFAULT_CONTEXT
@@ -562,8 +562,10 @@ class ExponentialEmbedder:
         self, *, key: int | None = None, beta: float | None = None, context: int | None = None
     ) -> None:
         self._key = key if key is not None else DEFAULT_KEY
-        self._beta = beta if beta is not None else float(
-            os.environ.get("WATERMARKS_STATISTICAL_BETA", "2.0")
+        self._beta = (
+            beta
+            if beta is not None
+            else float(os.environ.get("WATERMARKS_STATISTICAL_BETA", "2.0"))
         )
         self._context = context if context is not None else DEFAULT_CONTEXT
 
@@ -878,7 +880,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         det = SynthIDTextMeanDetector(key=args.key, threshold=args.threshold, context=args.context)
     elif args.scheme == "synthid-bayes":
         det = SynthIDTextBayesDetector(
-            key=args.key, gamma=args.gamma, delta=args.delta, threshold=args.threshold,
+            key=args.key,
+            gamma=args.gamma,
+            delta=args.delta,
+            threshold=args.threshold,
             context=args.context,
         )
     elif args.scheme == "unigram":

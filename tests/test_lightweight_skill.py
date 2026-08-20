@@ -106,9 +106,9 @@ def test_skill_api_key_env_var_matches_server():
     skill_text = (ROOT / "skills" / "remove-ai-marks" / "SKILL.md").read_text(encoding="utf-8")
     server_text = (ROOT / "service" / "scripts" / "server.py").read_text(encoding="utf-8")
 
-    assert 'WATERMARKS_SERVER_API_KEY' in skill_text
-    assert 'WATERMARKS_SERVICE_API_KEY' not in skill_text
-    assert 'WATERMARKS_SERVER_API_KEY' in server_text
+    assert "WATERMARKS_SERVER_API_KEY" in skill_text
+    assert "WATERMARKS_SERVICE_API_KEY" not in skill_text
+    assert "WATERMARKS_SERVER_API_KEY" in server_text
 
 
 def test_vendored_text_clean_behavior_matches_service():
@@ -125,6 +125,10 @@ def test_vendored_text_clean_behavior_matches_service():
         "fa\u200bke\u200bspaces\u200band\u200bzwsp",
     ]
     for raw in samples:
-        svc = subprocess.run(service_cli, input=raw, text=True, encoding="utf-8", capture_output=True, check=True)
-        vend = subprocess.run(vendored_cli, input=raw, text=True, encoding="utf-8", capture_output=True, check=True)
+        svc = subprocess.run(
+            service_cli, input=raw, text=True, encoding="utf-8", capture_output=True, check=True
+        )
+        vend = subprocess.run(
+            vendored_cli, input=raw, text=True, encoding="utf-8", capture_output=True, check=True
+        )
         assert svc.stdout == vend.stdout, f"output drift for {raw!r}"

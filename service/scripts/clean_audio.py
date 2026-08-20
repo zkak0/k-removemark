@@ -275,7 +275,9 @@ def detect_periodic_pulses(samples: list[float], rate: int) -> dict[str, Any]:
         "period_hz": round(period_hz, 2),
         "note": (
             "possible periodic (Morse-like) pulse pattern - best-effort "
-            "heuristic, not a vendor defeat" if present else "no periodic pulse pattern"
+            "heuristic, not a vendor defeat"
+            if present
+            else "no periodic pulse pattern"
         ),
     }
 
@@ -285,14 +287,26 @@ def decode_with_ffmpeg(src: Path, dest: Path) -> str | None:
     if which("ffmpeg") is None:
         return None
     cmd = [
-        "ffmpeg", "-nostdin", "-y",
-        "-i", str(src),
-        "-vn", "-ac", "1", "-ar", "44100", "-c:a", "pcm_s16le",
+        "ffmpeg",
+        "-nostdin",
+        "-y",
+        "-i",
+        str(src),
+        "-vn",
+        "-ac",
+        "1",
+        "-ar",
+        "44100",
+        "-c:a",
+        "pcm_s16le",
         str(dest),
     ]
     try:
         r = subprocess.run(
-            cmd, capture_output=True, text=True, check=False,
+            cmd,
+            capture_output=True,
+            text=True,
+            check=False,
             creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
         )
     except OSError:
@@ -312,12 +326,19 @@ def apply_dsp_compressed(src: Path, dest: Path, *, seed: int = DEFAULT_SEED) -> 
             return {"available": False, "error": f"ffmpeg decode: {err}"}
         dsp = apply_dsp(wav_in, wav_out, seed=seed)
         cmd = [
-            "ffmpeg", "-nostdin", "-y",
-            "-i", str(wav_out),
-            "-vn", str(dest),
+            "ffmpeg",
+            "-nostdin",
+            "-y",
+            "-i",
+            str(wav_out),
+            "-vn",
+            str(dest),
         ]
         r = subprocess.run(
-            cmd, capture_output=True, text=True, check=False,
+            cmd,
+            capture_output=True,
+            text=True,
+            check=False,
             creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
         )
         if r.returncode != 0 or not dest.is_file():

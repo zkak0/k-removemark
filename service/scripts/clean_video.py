@@ -130,7 +130,10 @@ def scrub_audio_with_ffmpeg(src: Path, dest: Path) -> dict[str, Any]:
                 timeout=3600,
             )
         except subprocess.CalledProcessError as e:
-            return {"available": False, "error": f"ffmpeg audio extraction failed: {e.stderr[-400:]}"}
+            return {
+                "available": False,
+                "error": f"ffmpeg audio extraction failed: {e.stderr[-400:]}",
+            }
         try:
             dsp = ca.apply_dsp(audio_wav, audio_dsp, seed=1)
         except Exception as e:
