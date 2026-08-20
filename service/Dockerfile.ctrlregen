@@ -22,7 +22,7 @@ ARG NOAI_WATERMARK_REF=b642ae45d20eded52c96d570985eb4e3e427aac8
 # python:3.14-slim (multi-arch manifest digest). The ML deps in
 # requirements-ctrlregen.txt are current versions that ship Python 3.14 wheels,
 # so the newest slim base is used, matching the other service images.
-FROM python:3.14-slim@sha256:d6e0850f13fda0e2305d4c3c1c2f7930fe1042d34ddd958e49bba6ef685d0bb2
+FROM python:3.14-slim@sha256:ce40764625a4ff50df3548277632e7f96c4e77fe75fa848aae9885476e7df5a4
 
 ARG NOAI_WATERMARK_REF
 
