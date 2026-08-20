@@ -17,9 +17,9 @@
 # Pinned upstream commit (2026-07-10). Keep in sync with setup_markllm.sh.
 ARG MARKLLM_REF=c45ddc40f7b761beabe55a1b8dc4690e531d1c6d
 
-# Default: python:3.12-slim linux/amd64 digest (published image). GPU/arm64
+# Default: python:3.12-slim (tag tracks latest patch). GPU/arm64
 # builds override with --build-arg BASE_IMAGE=<digest for the target arch>.
-ARG BASE_IMAGE=python:3.12-slim@sha256:876416ecde9a
+ARG BASE_IMAGE=python:3.12-slim
 FROM ${BASE_IMAGE}
 
 ARG MARKLLM_REF
