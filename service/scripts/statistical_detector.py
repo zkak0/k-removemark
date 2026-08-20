@@ -551,7 +551,7 @@ class UnigramWatermarkEmbedder:
             candidates = rng.sample(bank.words, k=min(8, len(bank.words)))
             green_cands = [w for w in candidates if w in green]
             pool = green_cands or candidates
-            out.append(min(pool, key=lambda w: bank.rank(w)))
+            out.append(min(pool, key=bank.rank))
         return out
 
 
@@ -578,7 +578,7 @@ class ExponentialEmbedder:
             r = rng.uniform(0.0, total_w)
             acc = 0.0
             chosen = candidates[-1]
-            for w, wt in zip(candidates, weights):
+            for w, wt in zip(candidates, weights, strict=True):
                 acc += wt
                 if r <= acc:
                     chosen = w
