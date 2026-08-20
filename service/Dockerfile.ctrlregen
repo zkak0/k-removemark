@@ -19,9 +19,9 @@
 # with setup_ctrlregen.sh.
 ARG NOAI_WATERMARK_REF=b642ae45d20eded52c96d570985eb4e3e427aac8
 
-# python:3.12-slim (multi-arch manifest digest). The ML deps in
+# python:3.12-slim (tag tracks latest patch). The ML deps in
 # requirements-ctrlregen.txt are current versions that ship Python 3.12 wheels.
-FROM python:3.12-slim@sha256:876416ecde9a
+FROM python:3.12-slim
 
 ARG NOAI_WATERMARK_REF
 
