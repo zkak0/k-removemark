@@ -49,6 +49,8 @@ DEFAULT_KEY = int(os.environ.get("WATERMARKS_STATISTICAL_KEY", "15485863"))
 DEFAULT_GAMMA = float(os.environ.get("WATERMARKS_STATISTICAL_GAMMA", "0.25"))
 DEFAULT_THRESHOLD = float(os.environ.get("WATERMARKS_STATISTICAL_THRESHOLD", "4.0"))
 DEFAULT_CONTEXT = int(os.environ.get("WATERMARKS_STATISTICAL_CONTEXT", "1"))
+DEFAULT_DELTA = float(os.environ.get("WATERMARKS_STATISTICAL_DELTA", "0.5"))
+DEFAULT_BETA = float(os.environ.get("WATERMARKS_STATISTICAL_BETA", "2.0"))
 
 _TOKEN_SPLIT = re.compile(r"[^\W_]+", re.UNICODE)
 
@@ -116,6 +118,43 @@ def _z_mean(mean_score: float, total: int) -> float:
 def _p_value(z: float) -> float:
     """One-sided p from a z-score (Abramowitz-Stegun 7.1.26 error function)."""
     return 0.5 * math.erfc(z / math.sqrt(2.0))
+
+
+def _llr_constants(
+    gamma: float, delta: float
+) -> tuple[float, float, float, float]:
+    """Per-token log-likelihood ratios for the KGW-style boosted step model.
+
+    Under the null the per-token g-score is uniform on [0, 1). Under the
+    watermark the top ``gamma`` fraction is boosted by ``delta``. Returns
+    (llr_green, llr_red, e_null, var_null) where e_null/var_null are the
+    null-distribution mean/variance of a single token's LLR.
+    """
+    pg = (1.0 + delta) / gamma
+    pr = (1.0 - delta) / (1.0 - gamma)
+    llr_green = math.log(pg)
+    llr_red = math.log(pr)
+    e = gamma * llr_green + (1.0 - gamma) * llr_red
+    var = gamma * (llr_green - e) ** 2 + (1.0 - gamma) * (llr_red - e) ** 2
+    return llr_green, llr_red, e, var
+
+
+def _bayes_llr(
+    pairs: list[tuple[float, str]], gamma: float, delta: float
+) -> tuple[float, float, float]:
+    """Sum of per-token LLRs plus null-moment z-score.
+
+    Returns (total_llr, e_null_total, z).
+    """
+    llr_green, llr_red, e, var = _llr_constants(gamma, delta)
+    total = len(pairs)
+    if total <= 0:
+        return 0.0, 0.0, 0.0
+    s = sum(llr_green if g < gamma else llr_red for g, _ in pairs)
+    e_null = total * e
+    std_null = math.sqrt(total * var) if var > 0 else 1.0
+    z = (s - e_null) / std_null
+    return s, e_null, z
 
 
 # -- detectors ---------------------------------------------------------------
@@ -217,6 +256,200 @@ class SynthIDTextMeanDetector:
         }
 
 
+class SynthIDTextBayesDetector:
+    """Bayesian (LLR) detection over keyed per-token scores.
+
+    Each token's g = PRF(key, context, token) is uniform under the null and
+    boosted under the watermark. The per-token log-likelihood ratio for a
+    step boost model is summed; the null mean/variance come from the model
+    moments (no trained prior, fully self-consistent for our embedders).
+    """
+
+    name = "statistical-synthid-bayes"
+    vendor = "open-llm"
+
+    def __init__(
+        self,
+        *,
+        key: int | None = None,
+        gamma: float | None = None,
+        delta: float | None = None,
+        threshold: float | None = None,
+        context: int | None = None,
+    ) -> None:
+        self._key = key if key is not None else DEFAULT_KEY
+        self._gamma = gamma if gamma is not None else DEFAULT_GAMMA
+        self._delta = delta if delta is not None else DEFAULT_DELTA
+        self._threshold = threshold if threshold is not None else DEFAULT_THRESHOLD
+        self._context = context if context is not None else DEFAULT_CONTEXT
+
+    def available(self) -> bool:
+        return True
+
+    def detect(self, text: str) -> dict[str, Any]:
+        toks = tokens(text)
+        pairs = _scored_pairs(toks, self._key, self._context)
+        total = len(pairs)
+        s, e_null, z = _bayes_llr(pairs, self._gamma, self._delta)
+        return {
+            "detector": self.name,
+            "vendor": self.vendor,
+            "scheme": "synthid-text-bayes",
+            "available": True,
+            "keyed": True,
+            "tokens_scored": total,
+            "gamma": self._gamma,
+            "delta": self._delta,
+            "total_llr": round(s, 4),
+            "expected_null_llr": round(e_null, 4),
+            "z_score": round(z, 4),
+            "p_value": round(_p_value(z), 6),
+            "threshold": self._threshold,
+            "is_watermarked": bool(z > self._threshold),
+            "note": (
+                "Bayesian log-likelihood-ratio SynthID-Text class detection "
+                "(keyed, self-consistent step model, no trained prior). Not a "
+                "vendor detector."
+            ),
+        }
+
+
+class UnigramWatermarkDetector:
+    """Unigram-frequency green/red-list detection (frequency prior, no model).
+
+    The vocabulary is frequency-ranked; the green set for a context is the
+    keyed top-``gamma`` fraction of that ranking. Detection counts green tokens
+    with a KGW-style z-test. This is the ZMD-compatible stand-in for the
+    Unigram-Watermark scheme (which normally uses an LLM frequency list).
+    """
+
+    name = "statistical-unigram"
+    vendor = "open-llm"
+
+    def __init__(
+        self,
+        *,
+        key: int | None = None,
+        gamma: float | None = None,
+        threshold: float | None = None,
+        context: int | None = None,
+        bank: WordBank | None = None,
+    ) -> None:
+        self._key = key if key is not None else DEFAULT_KEY
+        self._gamma = gamma if gamma is not None else DEFAULT_GAMMA
+        self._threshold = threshold if threshold is not None else DEFAULT_THRESHOLD
+        self._context = context if context is not None else DEFAULT_CONTEXT
+        self._bank = bank if bank is not None else WordBank()
+
+    def available(self) -> bool:
+        return True
+
+    def detect(self, text: str) -> dict[str, Any]:
+        toks = tokens(text)
+        total = 0
+        green = 0
+        for i in range(self._context, len(toks)):
+            ctx = toks[max(0, i - self._context) : i]
+            total += 1
+            if toks[i] in self._bank.green_for(self._key, ctx, self._gamma):
+                green += 1
+        z = _z_green(green, total, self._gamma)
+        return {
+            "detector": self.name,
+            "vendor": self.vendor,
+            "scheme": "unigram",
+            "available": True,
+            "keyed": True,
+            "tokens_scored": total,
+            "green_tokens": green,
+            "green_fraction": green / total if total else 0.0,
+            "gamma": self._gamma,
+            "z_score": round(z, 4),
+            "p_value": round(_p_value(z), 6),
+            "threshold": self._threshold,
+            "is_watermarked": bool(z > self._threshold),
+            "note": (
+                "Unigram-frequency green/red-list detection (ZMD stand-in for "
+                "Unigram-Watermark using our word bank as the frequency prior; "
+                "self-consistent, keyed). EWD/SWEET remain model-dependent "
+                "opt-ins and are not part of this scheme."
+            ),
+        }
+
+
+class ExponentialDetector:
+    """Exponential-tilting (EXP-edit family) detection, ZMD version.
+
+    Each token contributes ``exp(beta * g)``; under the null g ~ U(0,1) so
+    E[exp(beta*g)] = (exp(beta)-1)/beta. The summed score is z-tested against
+    the null moments. This mirrors the exponential weighting family (Aaronson &
+    Kirchner) without loading a language model.
+    """
+
+    name = "statistical-kgw-exp"
+    vendor = "open-llm"
+
+    def __init__(
+        self,
+        *,
+        key: int | None = None,
+        beta: float | None = None,
+        threshold: float | None = None,
+        context: int | None = None,
+    ) -> None:
+        self._key = key if key is not None else DEFAULT_KEY
+        self._beta = beta if beta is not None else float(
+            os.environ.get("WATERMARKS_STATISTICAL_BETA", "2.0")
+        )
+        self._threshold = threshold if threshold is not None else DEFAULT_THRESHOLD
+        self._context = context if context is not None else DEFAULT_CONTEXT
+
+    def available(self) -> bool:
+        return True
+
+    def detect(self, text: str) -> dict[str, Any]:
+        toks = tokens(text)
+        pairs = _scored_pairs(toks, self._key, self._context)
+        total = len(pairs)
+        if total <= 0:
+            score = 0.0
+            e = 0.0
+            var = 0.0
+        else:
+            beta = self._beta
+            if beta == 0.0:
+                score = sum(g for g, _ in pairs)
+                e = total * 0.5
+                var = total / 12.0
+            else:
+                score = sum(math.exp(beta * g) for g, _ in pairs)
+                m1 = (math.exp(beta) - 1.0) / beta
+                m2 = (math.exp(2.0 * beta) - 1.0) / (2.0 * beta)
+                e = total * m1
+                var = total * (m2 - m1 * m1)
+        std = math.sqrt(var) if var > 0 else 1.0
+        z = (score - e) / std
+        return {
+            "detector": self.name,
+            "vendor": self.vendor,
+            "scheme": "kgw-exp",
+            "available": True,
+            "keyed": True,
+            "tokens_scored": total,
+            "beta": self._beta,
+            "exp_score": round(score, 4),
+            "z_score": round(z, 4),
+            "p_value": round(_p_value(z), 6),
+            "threshold": self._threshold,
+            "is_watermarked": bool(z > self._threshold),
+            "note": (
+                "Exponential-tilting detection, EXP-edit family (keyed, "
+                "self-consistent, no model). EWD/SWEET require a language "
+                "model and remain documented opt-ins."
+            ),
+        }
+
+
 # -- embedders (for verify_harness: synthetic marks, no model) ---------------
 
 
@@ -228,6 +461,9 @@ class WordBank:
 
     def sample(self, rng: random.Random, n: int) -> list[str]:
         return [rng.choice(self.words) for _ in range(n)]
+
+    def rank(self, word: str) -> int:
+        return self.words.index(word) if word in self.words else len(self.words)
 
     def green_for(self, key: int, context: Sequence[str], gamma: float) -> list[str]:
         return [w for w in self.words if _prf01(key, context, w) < gamma]
@@ -269,6 +505,85 @@ class SynthIDTextMeanEmbedder:
             ctx = out[max(0, len(out) - self._context) :]
             candidates = rng.sample(bank.words, k=min(8, len(bank.words)))
             out.append(max(candidates, key=lambda w: _prf01(self._key, ctx, w)))
+        return out
+
+
+class SynthIDTextBayesEmbedder:
+    """Tournament-style embedder for the LLR test: pick the min-g token.
+
+    The Bayesian test treats g < gamma as the boosted (green) side, so the
+    embedder drives g toward 0 to maximise the positive log-likelihood ratio.
+    """
+
+    def __init__(self, *, key: int | None = None, context: int | None = None) -> None:
+        self._key = key if key is not None else DEFAULT_KEY
+        self._context = context if context is not None else DEFAULT_CONTEXT
+
+    def watermark(self, n_tokens: int, bank: WordBank, seed: int = 0) -> list[str]:
+        rng = random.Random(seed)  # noqa: S311  deterministic synthetic-data sampling
+        out: list[str] = []
+        for _ in range(n_tokens):
+            ctx = out[max(0, len(out) - self._context) :]
+            candidates = rng.sample(bank.words, k=min(8, len(bank.words)))
+            out.append(min(candidates, key=lambda w: _prf01(self._key, ctx, w)))
+        return out
+
+
+class UnigramWatermarkEmbedder:
+    """Pick the highest-frequency candidate that is green for its context."""
+
+    def __init__(
+        self, *, key: int | None = None, gamma: float | None = None, context: int | None = None
+    ) -> None:
+        self._key = key if key is not None else DEFAULT_KEY
+        self._gamma = gamma if gamma is not None else DEFAULT_GAMMA
+        self._context = context if context is not None else DEFAULT_CONTEXT
+
+    def watermark(self, n_tokens: int, bank: WordBank, seed: int = 0) -> list[str]:
+        rng = random.Random(seed)  # noqa: S311  deterministic synthetic-data sampling
+        out: list[str] = []
+        for _ in range(n_tokens):
+            ctx = out[max(0, len(out) - self._context) :]
+            green = bank.green_for(self._key, ctx, self._gamma)
+            if not green:
+                out.append(rng.choice(bank.words))
+                continue
+            candidates = rng.sample(bank.words, k=min(8, len(bank.words)))
+            green_cands = [w for w in candidates if w in green]
+            pool = green_cands or candidates
+            out.append(min(pool, key=lambda w: bank.rank(w)))
+        return out
+
+
+class ExponentialEmbedder:
+    """Weighted tournament: sample a candidate proportional to exp(beta*g)."""
+
+    def __init__(
+        self, *, key: int | None = None, beta: float | None = None, context: int | None = None
+    ) -> None:
+        self._key = key if key is not None else DEFAULT_KEY
+        self._beta = beta if beta is not None else float(
+            os.environ.get("WATERMARKS_STATISTICAL_BETA", "2.0")
+        )
+        self._context = context if context is not None else DEFAULT_CONTEXT
+
+    def watermark(self, n_tokens: int, bank: WordBank, seed: int = 0) -> list[str]:
+        rng = random.Random(seed)  # noqa: S311  deterministic synthetic-data sampling
+        out: list[str] = []
+        for _ in range(n_tokens):
+            ctx = out[max(0, len(out) - self._context) :]
+            candidates = rng.sample(bank.words, k=min(16, len(bank.words)))
+            weights = [math.exp(self._beta * _prf01(self._key, ctx, w)) for w in candidates]
+            total_w = sum(weights)
+            r = rng.uniform(0.0, total_w)
+            acc = 0.0
+            chosen = candidates[-1]
+            for w, wt in zip(candidates, weights):
+                acc += wt
+                if r <= acc:
+                    chosen = w
+                    break
+            out.append(chosen)
         return out
 
 
@@ -536,9 +851,15 @@ def _arg_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Keyed statistical text-watermark detection")
     p.add_argument("subcommand", choices=["detect"])
     p.add_argument("file", help="text file to score")
-    p.add_argument("--scheme", choices=["kgw", "synthid-mean"], default="kgw")
+    p.add_argument(
+        "--scheme",
+        choices=["kgw", "synthid-mean", "synthid-bayes", "unigram", "kgw-exp"],
+        default="kgw",
+    )
     p.add_argument("--key", type=int, default=DEFAULT_KEY)
     p.add_argument("--gamma", type=float, default=DEFAULT_GAMMA)
+    p.add_argument("--delta", type=float, default=DEFAULT_DELTA)
+    p.add_argument("--beta", type=float, default=1.0)
     p.add_argument("--threshold", type=float, default=DEFAULT_THRESHOLD)
     p.add_argument("--context", type=int, default=DEFAULT_CONTEXT)
     p.add_argument("--json", action="store_true")
@@ -555,6 +876,19 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
     if args.scheme == "synthid-mean":
         det = SynthIDTextMeanDetector(key=args.key, threshold=args.threshold, context=args.context)
+    elif args.scheme == "synthid-bayes":
+        det = SynthIDTextBayesDetector(
+            key=args.key, gamma=args.gamma, delta=args.delta, threshold=args.threshold,
+            context=args.context,
+        )
+    elif args.scheme == "unigram":
+        det = UnigramWatermarkDetector(
+            key=args.key, gamma=args.gamma, threshold=args.threshold, context=args.context
+        )
+    elif args.scheme == "kgw-exp":
+        det = ExponentialDetector(
+            key=args.key, beta=args.beta, threshold=args.threshold, context=args.context
+        )
     else:
         det = KGWDetector(
             key=args.key, gamma=args.gamma, threshold=args.threshold, context=args.context

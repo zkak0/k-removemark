@@ -197,14 +197,14 @@ Nuestro detector keyed y señal sin clave, 100 % CPU, sin LLM.
 - [x] Fix: `tests/test_clean_audio.py` escribía un WAV `unused` en la raíz del repo.
 - [x] Plugin: `plugin.json` raíz + `.claude-plugin/marketplace.json` (ruta de marketplace de Claude Code).
 - [x] Tests: paridad funcional de scripts vendored + coherencia de variable de API key.
-- [ ] MCP server (`service/scripts/mcp_server.py`) para clientes solo-MCP (Claude Desktop, ChatGPT, Zed, Windsurf).
-- [ ] Auto-arranque del servicio HTTP desde el skill (si `/health` falla).
-- [ ] `.opencode/` con `opencode.json` (skills + MCP).
-- [ ] Plantillas "una orden" por herramienta + README de acceso desde cualquier herramienta.
-- [ ] Detección de marcas JSON AIGC (norma china GB 45438-2025) + advertencia legal.
-- [ ] Detector bayesiano SynthID-Text (stdlib) como alternativa al mean-score.
-- [ ] Esquemas MarkLLM extra expuestos (EWD/SWEET/EXP/Unigram).
-- [ ] Heurística multilingüe (español + chino).
+- [x] MCP server (`service/scripts/mcp_server.py`) para clientes solo-MCP (Claude Desktop, ChatGPT, Zed, Windsurf).
+- [x] Auto-arranque del servicio HTTP desde el skill (si `/health` falla).
+- [x] `.opencode/` con `opencode.json` (skills + MCP).
+- [x] Plantillas "una orden" por herramienta + README de acceso desde cualquier herramienta.
+- [x] Detección de marcas JSON AIGC (norma china GB 45438-2025) + advertencia legal.
+- [x] Detector bayesiano SynthID-Text (stdlib) como alternativa al mean-score.
+- [x] Esquemas MarkLLM extra expuestos (Unigram + EXP-edit en stdlib; **EWD/SWEET son opt-ins con modelo**, documentados, no-ZMD).
+- [x] Heurística multilingüe (español + chino).
 - [ ] Audio comprimido (MP3/M4A vía ffmpeg) + ritmo Morse "AI".
 - [ ] Vídeo: opción `--scrub-audio`.
 - [ ] CI: pip-audit sobre los 5 requirements, pin de torch en ctrlregen, job Python 3.13.
@@ -215,7 +215,7 @@ Nuestro detector keyed y señal sin clave, 100 % CPU, sin LLM.
 | Canal / Channel | Default (CPU, sin modelos) | Opt-in (GPU/descarga) |
 | --- | --- | --- |
 | Texto Unicode (Layer A) | ✅ stdlib (heredado) | — |
-| Texto estadístico keyed (KGW/SynthID-text) | ✅ **nuevo** stdlib | — |
+| Texto estadístico keyed (KGW/SynthID-text) | ✅ **nuevo** stdlib (KGW, SynthID mean/bayes, Unigram, EXP) | EWD/SWEET: opt-in con modelo (MarkLLM) |
 | Texto: señal sin clave | ✅ **nuevo** heurísticas | — |
 | Texto: remoción (Layer B) | ✅ prompts + rewrite (heredado) | — |
 | Código (comentarios/IDs) | ✅ formatter + prompts (heredado) | — |

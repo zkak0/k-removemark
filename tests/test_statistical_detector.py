@@ -62,6 +62,45 @@ def test_synthid_mean_detects_own_watermark_and_not_plain(bank):
     assert p["is_watermarked"] is False and p["z_score"] < 3.0
 
 
+def test_synthid_bayes_detects_own_watermark_and_not_plain(bank):
+    wm = sd.SynthIDTextBayesEmbedder().watermark(200, bank)
+    plain = bank.sample(__import__("random").Random(7), 200)
+    w = sd.SynthIDTextBayesDetector().detect(" ".join(wm))
+    p = sd.SynthIDTextBayesDetector().detect(" ".join(plain))
+    assert w["scheme"] == "synthid-text-bayes"
+    assert w["is_watermarked"] is True and w["z_score"] > 8.0
+    assert w["total_llr"] > 0.0
+    assert p["is_watermarked"] is False and p["z_score"] < 3.0
+
+
+def test_llr_constants_math():
+    llr_green, llr_red, e, var = sd._llr_constants(0.25, 0.5)
+    assert llr_green > 0.0
+    assert llr_red < 0.0
+    assert e > 0.0  # boost model's null mean is positive but small vs std
+    assert var > 0.0
+
+
+def test_unigram_detects_own_watermark_and_not_plain(bank):
+    wm = sd.UnigramWatermarkEmbedder().watermark(200, bank)
+    plain = bank.sample(__import__("random").Random(3), 200)
+    w = sd.UnigramWatermarkDetector().detect(" ".join(wm))
+    p = sd.UnigramWatermarkDetector().detect(" ".join(plain))
+    assert w["scheme"] == "unigram"
+    assert w["is_watermarked"] is True and w["z_score"] > 8.0
+    assert p["is_watermarked"] is False and p["z_score"] < 3.0
+
+
+def test_exponential_detects_own_watermark_and_not_plain(bank):
+    wm = sd.ExponentialEmbedder().watermark(200, bank)
+    plain = bank.sample(__import__("random").Random(11), 200)
+    w = sd.ExponentialDetector().detect(" ".join(wm))
+    p = sd.ExponentialDetector().detect(" ".join(plain))
+    assert w["scheme"] == "kgw-exp"
+    assert w["is_watermarked"] is True and w["z_score"] > 6.0
+    assert p["is_watermarked"] is False and p["z_score"] < 3.0
+
+
 def test_short_text_is_honest():
     report = sd.KGWDetector().detect("hi")
     assert report["tokens_scored"] == 0

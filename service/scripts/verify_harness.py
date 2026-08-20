@@ -141,6 +141,18 @@ def run(
             sd.SynthIDTextMeanEmbedder(key=key, context=context),
             sd.SynthIDTextMeanDetector(key=key, context=context),
         ),
+        (
+            sd.SynthIDTextBayesEmbedder(key=key, context=context),
+            sd.SynthIDTextBayesDetector(key=key, context=context),
+        ),
+        (
+            sd.UnigramWatermarkEmbedder(key=key, gamma=gamma, context=context),
+            sd.UnigramWatermarkDetector(key=key, gamma=gamma, context=context),
+        ),
+        (
+            sd.ExponentialEmbedder(key=key, context=context),
+            sd.ExponentialDetector(key=key, context=context),
+        ),
     ]
     results = [
         _run_scheme(emb, det, bank, samples, tokens, seed, noise_rate) for emb, det in schemes
@@ -167,7 +179,14 @@ def run(
     worst_tnr = min((r.tnr for r in results), default=0.0)
     passed = worst_fpr <= GATE_MAX_FPR and worst_tpr >= GATE_MIN_TPR and worst_tnr >= GATE_MIN_TNR
     return {
-        "detectors": ["statistical-kgw", "statistical-synthid-mean", "kgw-key-mismatch"],
+        "detectors": [
+            "statistical-kgw",
+            "statistical-synthid-mean",
+            "statistical-synthid-bayes",
+            "statistical-unigram",
+            "statistical-kgw-exp",
+            "kgw-key-mismatch",
+        ],
         "config": {
             "samples": samples,
             "tokens": tokens,
