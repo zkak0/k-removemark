@@ -46,6 +46,28 @@ npx skills add zkak0/k-removemark
 
 Después pide a tu agente *"quita las marcas de agua"*.
 
+### Usar desde cualquier herramienta (una orden)
+
+La idea es **pegar el link del repo y dar una sola orden** en la herramienta
+que ya usas (OpenCode, Claude Code, Cursor, Antigravity, VS Code, Gemini CLI,
+Claude Desktop, ChatGPT, Zed, Windsurf…). Plantillas de una orden para cada
+una: [`integrations/QUICKSTART.md`](integrations/QUICKSTART.md).
+
+¿Tu herramienta solo habla MCP (Claude Desktop, ChatGPT, Zed, Windsurf)?
+Conecta un servidor MCP a `service/scripts/mcp_server.py` (arranca el servicio
+automáticamente al primer uso):
+
+```json
+{
+  "mcpServers": {
+    "k-removemark": {
+      "command": "python",
+      "args": ["ruta/al/repo/service/scripts/mcp_server.py"]
+    }
+  }
+}
+```
+
 ### Servicio local (opcional)
 
 El servicio es un servidor HTTP ligero en Python 3.10+ (solo librería estándar,
@@ -84,6 +106,13 @@ invisibles. La reescritura de texto marcado estadísticamente es un trabajo de
 
 Usa esta herramienta solo en contenido que te pertenezca o que tengas permiso
 de procesar. Respeta las leyes locales.
+
+> **Aviso legal (China):** la norma GB 45438-2025 (vigente desde el 1 de
+> septiembre de 2025) obliga a etiquetar el contenido generado por IA
+> (etiquetas visibles y metadatos AIGC). **Eliminar esas etiquetas obligatorias
+> es ilegal en China** y ya hay sanciones aplicadas a cuentas y a vendedores de
+> herramientas para quitarlas. Esta herramienta no debe usarse para ocultar la
+> procedencia de contenido que no es tuyo ni para evadir obligaciones legales.
 
 ## Documentación
 
