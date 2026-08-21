@@ -29,6 +29,9 @@
 !/CONTRIBUTING.md
 !/install.sh
 !/install.ps1
+!/instalar-asistente.bat
+!/instalar-asistente.command
+!/GUIA_USUARIO.md
 !/integrations/
 !/integrations/**
 !/LICENSE
