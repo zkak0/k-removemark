@@ -13,6 +13,16 @@ description: >
 
 Multi-vendor anti-detection hygiene for **text** (Unicode + statistical rewrite) and **files** (C2PA / AI metadata across common containers).
 
+## Bootstrap (first time this repo is used)
+
+If you reached this repo because a user pasted its link and the skill is not yet installed permanently:
+
+1. Clone the repo: `git clone https://github.com/zkak0/k-removemark`
+2. Check Python 3.10+ (`python3 --version`). If missing, install it and tell the user what you are doing:
+   Windows `winget install Python.Python.3.12` · macOS `brew install python3` · Linux `sudo apt-get install -y python3`
+3. Run the installer from the cloned folder (`.\install.ps1` on Windows, `./install.sh` on macOS/Linux). It copies these skills into every detected agent host.
+4. Tell the user they can now ask for cleanups in natural language without pasting the link again.
+
 Read if needed:
 
 - `references/mark-classes.md` — Unicode / sampling / C2PA / containers
@@ -35,9 +45,8 @@ Base URL comes from `WATERMARKS_SERVICE_URL`, default `http://127.0.0.1:8765`:
 WM="${WATERMARKS_SERVICE_URL:-http://127.0.0.1:8765}"
 ```
 
-The service is started either by the operator (`docker compose up -d`, or a
-published GHCR image) or locally (`make serve`). **Always check it first**,
-and never fall back to local cleaning:
+The service is started on demand by the MCP server, or manually from a repo
+checkout. **Always check it first**, and never fall back to local cleaning:
 
 ```bash
 curl -sf "$WM/health"
@@ -45,16 +54,11 @@ curl -sf "$WM/health"
 ```
 
 If `/health` fails, **offer to start the service yourself** before giving up
-(ask the user, then run one of these):
+(ask the user, then run):
 
 ```bash
-# local, in the repo checkout (preferred for a local install):
-cd <repo-checkout> && make serve
-# or without make:
+# from the repo checkout:
 python service/scripts/server.py
-
-# container (if Docker is installed):
-docker compose up -d
 ```
 
 Then re-check `curl -sf "$WM/health"` until it returns `{"ok": true, ...}`
@@ -302,16 +306,11 @@ Avoid formulaic transitions. Do not omit any bullet. Output only the document.
 
 ### Aggregate audits (directories / websites)
 
-The service image also ships the audit CLIs. Run them as one-shot containers
-when a directory or website audit is needed:
+Run the audit CLI from a local checkout of the repo:
 
 ```bash
-# Local checkout, or inside the service image:
-docker run --rm -v "$(pwd)/src:/data:ro" k-removemark \
-  /app/scripts/audit_dir.py /data --json
+python3 service/scripts/audit_dir.py DIR --json
 ```
-
-Or against a local checkout of the repo: `python3 service/scripts/audit_dir.py DIR --json`.
 
 Audit exit codes (same in `--json`, `--sarif` and human output): `0` no
 actionable findings, `1` actionable findings, `2` usage/refusal error,
@@ -344,5 +343,5 @@ Always state:
 ## Service not reachable?
 
 If `$WM/health` fails: tell the user the service is down and how to start it
-(`docker compose up -d`, `make serve`, or the published GHCR image). Do **not**
+(`python service/scripts/server.py` from the repo checkout). Do **not**
 attempt to clean locally — this skill contains no cleaning code.
