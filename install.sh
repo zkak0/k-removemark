@@ -13,6 +13,20 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILLS=("remove-ai-marks" "clean-user-facing-text")
 
+# Comprobación e instalación silenciosa de Python si falta (macOS / Linux)
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "Python 3 no está instalado. Intentando instalarlo automáticamente..."
+  if command -v brew >/dev/null 2>&1; then
+    brew install python3 && echo "Python 3 se ha instalado correctamente." \
+      || echo "AVISO: No se pudo instalar Python con brew. Instálalo desde https://python.org"
+  elif command -v apt-get >/dev/null 2>&1; then
+    sudo apt-get update -y && sudo apt-get install -y python3 && echo "Python 3 instalado correctamente." \
+      || echo "AVISO: Instala Python 3 manualmente desde https://python.org"
+  else
+    echo "AVISO: No se encontró un gestor de paquetes (brew/apt). Instala Python 3 desde https://python.org"
+  fi
+fi
+
 TARGET=${1:-auto}
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -96,6 +110,34 @@ done
 if [ "$installed" = "0" ]; then
   echo "nothing installed (no skills found?)"
   exit 1
+fi
+
+# Autoconfiguración automática para Claude Desktop (servidor MCP) si está instalado
+CLAUDE_DIR="${HOME}/Library/Application Support/Claude"
+CLAUDE_CFG="${CLAUDE_DIR}/claude_desktop_config.json"
+MCP_PATH="${ROOT}/service/scripts/mcp_server.py"
+PY_BIN="$(command -v python3 || command -v python || echo python3)"
+if [ -d "$CLAUDE_DIR" ]; then
+  echo ""
+  echo "Configurando conector MCP para Claude Desktop de forma automática..."
+  mkdir -p "$CLAUDE_DIR"
+  if [ ! -f "$CLAUDE_CFG" ]; then
+    printf '{}\n' > "$CLAUDE_CFG"
+  fi
+  "$PY_BIN" - "$CLAUDE_CFG" "$PY_BIN" "$MCP_PATH" <<'PYEOF'
+import json, sys
+cfg_path, py_bin, mcp_path = sys.argv[1], sys.argv[2], sys.argv[3]
+try:
+    with open(cfg_path, encoding="utf-8") as f:
+        cfg = json.load(f)
+except Exception:
+    cfg = {}
+cfg.setdefault("mcpServers", {})
+cfg["mcpServers"]["k-removemark"] = {"command": py_bin, "args": [mcp_path]}
+with open(cfg_path, "w", encoding="utf-8") as f:
+    json.dump(cfg, f, indent=2, ensure_ascii=False)
+print("Conector MCP de Claude Desktop configurado con éxito.")
+PYEOF
 fi
 
 cat <<'EOF'
