@@ -1,48 +1,28 @@
 # Deny by default: only what is explicitly allowed below can be added to git.
-# Local test artifacts, secrets (.env), and tooling stay out without a rule
-# for each one. Tracked files are unaffected.
+# The repo ships ONLY what the end user / AI agent needs. Development tooling
+# (tests, CI, Docker, benchmarks, internal docs) lives on the maintainer's
+# machine and is intentionally not published.
 /*
-!/.github/
-!/.github/**
-!/benchmarks/
-!/benchmarks/**
-!/docs/
-!/docs/**
+!/.claude-plugin/
+!/.claude-plugin/**
 !/service/
 !/service/**
 !/skills/remove-ai-marks/
 !/skills/remove-ai-marks/**
-!/tests/
-!/tests/**
-!/.claude-plugin/
-!/.claude-plugin/**
-!/.opencode/
-!/.opencode/**
-!/.dockerignore
-!/.env.example
-!/.gitignore
-!/.pre-commit-hooks.yaml
 !/AGENTS.md
 !/CODE_OF_CONDUCT.md
-!/compose-check.sh
-!/compose.yaml
-!/CONTRIBUTING.md
+!/GUIA_USUARIO.md
 !/install.sh
 !/install.ps1
 !/instalar-asistente.bat
 !/instalar-asistente.command
-!/GUIA_USUARIO.md
 !/integrations/
 !/integrations/**
 !/LICENSE
-!/Makefile
 !/NOTICE
 !/package.json
 !/plugin.json
-!/pytest.ini
 !/README.md
-!/requirements-dev.txt
-!/ruff.toml
 !/SECURITY.md
 !/skills.json
 !/skills/clean-user-facing-text/
@@ -58,3 +38,7 @@
 posts.md
 *.cleaned.*
 *.bak
+
+# Docker path is not shipped (agents run Python directly)
+/service/Dockerfile*
+/service/.dockerignore

@@ -20,15 +20,23 @@ Al terminar te entrega el archivo limpio y un **informe honesto** con lo que se 
 
 ## Instalación (solo se hace una vez)
 
-1. Descarga este proyecto (botón verde **Code → Download ZIP** en GitHub) y descomprímelo.
-2. Abre la carpeta descomprimida.
-3. Haz **doble clic** según tu sistema:
+### Forma 1 — Pega el enlace en tu asistente de IA (la más simple)
+
+1. Abre tu asistente de IA (Claude Code, OpenCode, Cursor, Antigravity, Copilot…).
+2. Pega este enlace y dile:
+   > *"Usa este repositorio para revisar y limpiar mis documentos: https://github.com/zkak0/k-removemark"*
+3. El asistente hace todo solo: si necesita instalar Python te lo dirá y lo hará, luego deja la herramienta instalada para siempre.
+4. Cuando te confirme que terminó, listo. No necesitas el enlace nunca más.
+
+### Forma 2 — Doble clic (si prefieres no usar el asistente para instalar)
+
+1. Descarga el proyecto (botón verde **Code → Download ZIP**) y descomprímelo.
+2. Haz doble clic según tu sistema:
    - **Windows:** `instalar-asistente.bat`
    - **Mac:** `instalar-asistente.command`
-4. Espera el mensaje *"Instalación finalizada"*. Si no tenías Python, el instalador lo pone solo.
-5. Cierra y vuelve a abrir tu asistente de IA.
+3. Espera el mensaje *"Instalación finalizada"* y cierra y vuelve a abrir tu asistente.
 
-La herramienta queda instalada **para siempre** en todos los asistentes detectados: OpenCode, Claude Code (Cloud Code), Cursor, Antigravity, Gemini CLI, VS Code (Copilot/Cline/Roo), Codex y Claude Desktop.
+La herramienta queda instalada **para siempre** en todos los asistentes detectados: OpenCode, Claude Code, Cursor, Antigravity, Gemini CLI, VS Code (Copilot/Cline/Roo), Codex y Claude Desktop.
 
 ---
 
@@ -50,7 +58,7 @@ El asistente reconocerá la petición, usará la herramienta instalada y te devo
 ## Preguntas frecuentes
 
 **¿Necesito Docker?**
-No. La herramienta básica funciona solo con Python (el instalador lo gestiona). Docker es opcional.
+No. La herramienta básica funciona solo con Python (el instalador lo gestiona).
 
 **¿Mis documentos salen a internet?**
 No. Todo el análisis y limpieza ocurre localmente en tu equipo.

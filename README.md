@@ -2,8 +2,29 @@
 
 **Limpia marcas de agua de IA de tus archivos.** Texto, código, imágenes, vídeo, audio y metadatos — todo en tu equipo, sin subir nada a internet.
 
-[![CI](https://github.com/zkak0/k-removemark/actions/workflows/ci.yml/badge.svg)](https://github.com/zkak0/k-removemark/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/zkak0/k-removemark)](https://github.com/zkak0/k-removemark/releases)
+## 🤖 Para asistentes de IA (protocolo de arranque)
+
+Si eres un asistente de IA (Claude Code, OpenCode, Cursor, Antigravity, Copilot, Codex…) y un usuario te pegó este enlace, sigue estos pasos en orden:
+
+1. **Clona el repositorio:**
+   ```bash
+   git clone https://github.com/zkak0/k-removemark
+   ```
+2. **Verifica Python 3.10+** (`python3 --version` o `python --version`). Si falta, instálalo avisando al usuario lo que vas a hacer:
+   - Windows: `winget install Python.Python.3.12`
+   - macOS: `brew install python3`
+   - Linux (Debian/Ubuntu): `sudo apt-get install -y python3`
+3. **Ejecuta el instalador** desde la carpeta clonada. Deja la habilidad instalada permanentemente en todos los asistentes detectados:
+   - Windows: `.\install.ps1`
+   - macOS / Linux: `./install.sh`
+4. **Confirma al usuario** en su idioma: *"Instalación completa. Desde ahora solo pídeme 'revisa si esto tiene marca de agua' o 'limpia este documento', sin volver a usar el enlace."*
+
+Si el usuario no quiere instalación permanente, también puedes ejecutar los scripts directamente desde la carpeta clonada:
+
+```bash
+python service/scripts/inspect_file.py documento.docx   # inspeccionar
+python service/scripts/clean_file.py documento.docx -o documento.cleaned.docx   # limpiar
+```
 
 ## ¿Qué hace?
 
@@ -17,74 +38,28 @@ Quita las marcas que dejan los generadores de IA (Claude, Gemini/SynthID, OpenAI
 
 Funciona con PDF, DOCX, XLSX, PPTX, EPUB, ODT, HTML, Markdown, PNG, JPEG, WebP, AVIF, HEIC, BMP, GIF, TIFF, SVG, MP4/MOV, WAV y MP3.
 
-## Beneficios
+- **Privacidad:** todo ocurre localmente. Nada se envía a la nube.
+- **Sin GPU y sin modelos:** 100 % CPU por defecto.
+- **Honesto:** informa qué eliminó de verdad y qué fue un intento (mejor esfuerzo).
 
-- **Privacidad:** elimina la "etiqueta" de IA de tu contenido.
-- **Para contenido tuyo:** borradores, manuscritos o material que estés autorizado a procesar.
-- **Sin GPU y sin modelos:** 100 % CPU por defecto. Nada se envía a la nube.
-- **Fácil de usar:** un comando para instalarlo en tu agente y listo.
-- **Honesto:** te informa qué eliminó de verdad y qué fue un intento (mejor esfuerzo).
+## Instalación manual (sin asistente)
 
-## Instalación (skill para tu agente)
+1. Descarga o clona este repositorio y descomprímelo.
+2. Haz doble clic:
+   - Windows: `instalar-asistente.bat`
+   - macOS: `instalar-asistente.command`
 
-Funciona con OpenCode, Claude Code, Cursor, Antigravity, Gemini CLI, Copilot y Codex.
+El instalador configura Python si falta y activa la herramienta en todos tus asistentes a la vez.
 
-```bash
-# Opción 1 — en un solo comando:
-npx skills add zkak0/k-removemark
+## Uso diario
 
-# Opción 2 — instalador automático:
-./install.sh              # macOS / Linux
-.\install.ps1             # Windows
-```
+Abre tu asistente de IA y pídelo en lenguaje natural:
 
-Después pide a tu agente *"quita las marcas de agua"*.
+- *"Revisa si este documento tiene marca de agua de IA"*
+- *"Limpia este escrito para que no tenga rastros de inteligencia artificial"*
+- *"Quita los metadatos de esta imagen"*
 
-## Usar desde cualquier herramienta (una orden)
-
-La idea es **pegar el link del repo y dar una sola orden** en la herramienta que ya usas (OpenCode, Claude Code, Cursor, Antigravity, VS Code, Gemini CLI, Claude Desktop, ChatGPT, Zed, Windsurf…). Plantillas de una orden para cada una: [`integrations/QUICKSTART.md`](integrations/QUICKSTART.md).
-
-¿Tu herramienta solo habla MCP (Claude Desktop, ChatGPT, Zed, Windsurf)? Conecta un servidor MCP a `service/scripts/mcp_server.py` (arranca el servicio automáticamente al primer uso):
-
-```json
-{
-  "mcpServers": {
-    "k-removemark": {
-      "command": "python",
-      "args": ["ruta/al/repo/service/scripts/mcp_server.py"]
-    }
-  }
-}
-```
-
-## Servicio local (opcional)
-
-El servicio es un servidor HTTP ligero en Python 3.10+ (solo librería estándar, sin dependencias ni Docker):
-
-```bash
-make serve                # http://127.0.0.1:8765
-```
-
-## Uso rápido
-
-```bash
-SCRIPTS=service/scripts
-
-# Inspeccionar un archivo
-python3 "$SCRIPTS/inspect_file.py" draft.md
-
-# Limpiar texto, imagen o documento
-python3 "$SCRIPTS/clean_file.py" draft.md -o draft.cleaned.md
-python3 "$SCRIPTS/clean_file.py" photo.png -o photo.cleaned.png
-python3 "$SCRIPTS/clean_file.py" notas.docx -o notas.cleaned.docx
-```
-
-## Docker
-
-```bash
-make docker-core-build
-docker compose up -d      # servicio HTTP en http://127.0.0.1:8765
-```
+Guía completa para usuarios no técnicos: [`GUIA_USUARIO.md`](GUIA_USUARIO.md)
 
 ## Nota honesta
 
@@ -92,27 +67,4 @@ k-removemark elimina de forma verificable los metadatos y los caracteres invisib
 
 Usa esta herramienta solo en contenido que te pertenezca o que tengas permiso de procesar. Respeta las leyes locales.
 
-> **Aviso legal (China):** la norma GB 45438-2025 (vigente desde el 1 de septiembre de 2025) obliga a etiquetar el contenido generado por IA (etiquetas visibles y metadatos AIGC). **Eliminar esas etiquetas obligatorias es ilegal en China** y ya hay sanciones aplicadas a cuentas y a vendedores de herramientas para quitarlas. Esta herramienta no debe usarse para ocultar la procedencia de contenido que no es tuyo ni para evadir obligaciones legales.
-
-## Documentación
-
-- **Guía no técnica (español):** [`docs/GUIA.md`](docs/GUIA.md)
-- Skill: [`skills/remove-ai-marks/`](skills/remove-ai-marks/)
-- Servicio: [`service/`](service/)
-
-## Pruebas
-
-```bash
-python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
-.venv/bin/python -m pytest   # o: make test
-```
-
-## Historial
-
-### v0.1.0 — primera versión
-
-- Detección estadística de marcas de texto (KGW y SynthID-Text) con clave.
-- Limpieza de metadatos y marcas visibles en imágenes, vídeo y audio (CPU).
-- Skill de agente e instaladores para OpenCode, Cursor, Claude Code, etc.
-- Modo automático: hooks de pre-commit, portapapeles y carpeta vigilada.
-- Informe honesto: separa lo verificado de lo que es mejor esfuerzo.
+> **Aviso legal (China):** la norma GB 45438-2025 obliga a etiquetar el contenido generado por IA. Eliminar esas etiquetas es ilegal en China. No uses esta herramienta para evadir obligaciones legales ni para ocultar la procedencia de contenido ajeno.
