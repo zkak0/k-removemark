@@ -1,35 +1,35 @@
-# How Claude marks AI-generated content
+# Cómo Claude marca el contenido generado por IA
 
-Primary source: [Anthropic Help Center](https://support.claude.com/en/articles/16266773-how-claude-marks-ai-generated-content) (EU AI Act Article 50(2) Code of Practice).
+Fuente primaria: [Centro de ayuda de Anthropic](https://support.claude.com/en/articles/16266773-how-claude-marks-ai-generated-content) (Código de prácticas del Artículo 50(2) del EU AI Act).
 
-## Policy snapshot
+## Resumen de política
 
-| Topic | Anthropic position |
+| Tema | Posición de Anthropic |
 | --- | --- |
-| New models | Marking for models launched on/after **2026-08-02** |
-| Older models | Transition; “in progress” |
-| Surfaces | API, Claude, Claude Code, Cowork, Tag |
-| Regions | **Worldwide** |
-| Detection | Third-party detection promised; docs **forthcoming** |
+| Modelos nuevos | Marcado para modelos lanzados el **2026-08-02** o después |
+| Modelos anteriores | Transición; "en progreso" |
+| superficies | API, Claude, Claude Code, Cowork, etiquetas (Tag) |
+| Regiones | **Mundial** |
+| Detección | Prometida para terceros; docs **próximamente** |
 
-## Mechanism 1 — embedded text watermarks
+## Mecanismo 1 — marcas de texto incrustadas
 
-- Applied at the **model level** into the text itself (not file metadata).
-- Imperceptible; survives copy-paste; may survive light editing.
-- Weakened by paraphrase, translation, heavy edit, mixing, short text.
+- Aplicado a **nivel del modelo** dentro del texto mismo (no en metadatos del archivo).
+- Imperceptible; sobrevive a copy-paste; puede sobrevivir a ediciones leves.
+- Se debilita con paráfrasis, traducción, edición fuerte, mezcla, texto corto.
 
-**Likely technical class** (Anthropic has not published the algorithm): statistical **token-sampling** watermarks (Kirchenbauer / SynthID-style). See `vendor-notes.md` and `mark-classes.md`.
+**Clase técnica probable** (Anthropic no publicó el algoritmo): marcas estadísticas de **sampling de tokens** (estilo Kirchenbauer / SynthID-Text). Ver `vendor-notes.md` y `mark-classes.md`.
 
-Layer A scripts only remove **Unicode / homoglyph** carriers. Layer B (rewrite) targets statistical marks.
+Los scripts de Capa A solo eliminan carriers de **Unicode / homoglifos**. La Capa B (reescritura) ataca las marcas estadísticas.
 
-## Mechanism 2 — C2PA on files
+## Mecanismo 2 — C2PA en archivos
 
-- Signed **Content Credentials** on supported types (examples: `.png`, `.jpg`, `.svg`).
-- Tamper-evident while present; stripped by re-encode, metadata scrub, or many upload pipelines.
-- Inspect with `c2patool` when installed; strip via `clean_image.py` / `clean_file.py` / ExifTool.
+- **Credenciales de Contenido** firmadas en tipos compatibles (ejemplos: `.png`, `.jpg`, `.svg`).
+- A prueba de manipulación mientras están presentes; se eliminan con re-encode, scrub de metadatos o muchos pipelines de subida.
+- Inspeccionar con `c2patool` cuando esté instalado; eliminar via `clean_image.py` / `clean_file.py` / ExifTool.
 
-## Caveats (Anthropic)
+## Advertencias (Anthropic)
 
-- Detected mark ⇒ content **may have been processed** by Claude — not proof of sole authorship.
-- No mark ≠ human-only origin.
-- Proofreading / translate / summarize can stamp human material.
+- Marca detectada ⇒ el contenido **puede haber sido procesado** por Claude — no es prueba de autoría exclusiva.
+- Sin marca ≠ origen puramente humano.
+- Corrección / traducción / resumen pueden estampar material humano.

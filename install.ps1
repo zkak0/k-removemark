@@ -14,7 +14,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$Root = Split-Path -Parent $MyInvocation.MyCommand.Path
+$Root = (Resolve-Path (Split-Path -Parent $MyInvocation.MyCommand.Path)).Path
 $Skills = @("remove-ai-marks", "clean-user-facing-text")
 
 # Comprobación e instalación silenciosa de Python si falta (Windows)

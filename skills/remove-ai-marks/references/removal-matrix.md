@@ -1,52 +1,50 @@
-# Removal matrix
+# Matriz de eliminación
 
-| Target | Method | Script / action | Side effects | Verifiable today? |
+| Objetivo | Método | Script / acción | Efectos secundarios | ¿Verificable hoy? |
 | --- | --- | --- | --- | --- |
-| Invisible Unicode / exotic spaces / bidi / tags | Strip / normalize | `inspect_text.py`, `clean_text.py`, `clean_file.py` | Minimal | Yes (codepoint report) |
-| Stylometric AI cadence / burstiness / n-grams (zero-LLM) | Statistical variance & cadence scoring | `score_stylometry.py`, `inspect_text.py --stylometry`, `audit_dir.py --check-stylometry` | None (detection only) | Yes (calibrated score + phrase spans) |
-| Statistical text watermark (SynthID-class / Kirchenbauer) | Multi-pass paraphrase / humanize / back-translate / structural | Agent Layer B + optional `rewrite_text.py` | Meaning/style drift | No without vendor key/detector; **MarkLLM harness** (`detect_text_watermark.py`) verifies a specific scheme config before/after |
-| C2PA on PNG/JPEG/WebP/AVIF/HEIC | Drop APP11 / PNG `caBX` / RIFF `C2PA` / ISOBMFF `jumb` & `uuid` / exiftool | `clean_image.py` | Loses provenance metadata | Yes |
-| GIF comment/XMP extensions | Drop 0xFE / XMP application extensions (keep `NETSCAPE2.0`) | `clean_image.py` | Loses GIF comments/XMP | Yes (re-inspect) |
-| TIFF XMP/EXIF/GPS/IPTC/MakerNote (classic + BigTIFF) | Drop IFD tags, zero payloads, keep strip offsets | `clean_image.py` | Loses TIFF metadata | Yes (re-inspect) |
-| BMP trailing metadata | Truncate non-image trailing bytes, fix file-size field | `clean_image.py` | Removes appended metadata | Yes (re-inspect) |
-| EPUB OPF metadata / XHTML meta / embedded media | Scrub OPF, strip XHTML meta/JSON-LD, clean embedded media, Layer A (skip encrypted parts) | `clean_file.py` | Loses book metadata; rewrites archive | Yes (re-inspect) |
-| SVG metadata / XMP / embedded data URIs | Drop `<metadata>`, xmpmeta; clean embedded data URIs | `clean_file.py` | Loses SVG metadata; cleans embedded rasters | Yes (re-inspect) |
-| PDF XMP / info | exiftool `-all=` preferred | `clean_file.py` | Loses PDF metadata; degraded without exiftool | Partial |
-| DOCX / XLSX / PPTX props / customXml / embedded media | Rewrite OOXML zip, scrub text runs, clean media/ | `clean_file.py` | Loses doc properties; cleans embedded rasters | Yes |
-| ODT meta:generator | Scrub `meta.xml` | `clean_file.py` | Loses generator tag | Yes |
-| HTML generator / JSON-LD / embedded data URIs | Strip tags; clean embedded data URIs | `clean_file.py` | Loses meta; cleans embedded rasters | Yes |
-| Markdown AI frontmatter keys / embedded data URIs | Drop keys; clean embedded data URIs | `clean_file.py` | Loses YAML keys; cleans embedded rasters | Yes |
-| Pixel image watermark (SynthID-media / StegaStamp / Tree-Ring / StableSignature) | CtrlRegen regeneration (external backend) | `clean_ctrlregen.py` / `clean_image.py --remove-pixel ctrlregen` | Regenerates pixels; heavy compute; detail drift at higher strength | No without official detector; reverse-SynthID score is a local surrogate; **MarkDiffusion same-scheme harness** (`markdiffusion_harness.py detect`) verifies a Tree-Ring-class scheme config before/after |
-| Pixel image watermark (Tree-Ring-class) | DiffusionPurification regeneration (external MarkDiffusion backend) | `clean_image.py --remove-pixel diffusion` | Blind regeneration; more drift than CtrlRegen; heavy compute | Same-scheme only via the MarkDiffusion harness (not a vendor-detector oracle) |
-| Audio / video watermarks (SynthID-media) | — | Out of scope | — | — |
-| C2PA soft binding (in-content link to manifest) | — | Out of scope (survives our metadata strip) | — | Vendor detector only |
-| Data-driven model backdoors | — | Out of scope | — | — |
+| Unicode invisible / espacios exóticos / bidi / tags | Strip / normalizar | `inspect_text.py`, `clean_text.py`, `clean_file.py` | Mínimos | Sí (reporte de codepoints) |
+| Cadencia estilométrica de IA / burstiness / n-gramas (sin LLM) | Puntuación estadística de varianza y cadencia | `score_stylometry.py`, `inspect_text.py --stylometry`, `audit_dir.py --check-stylometry` | Ninguno (solo detección) | Sí (puntuación calibrada + spans de frases) |
+| Marca estadística de texto (SynthID-class / Kirchenbauer) | Paráfrasis multipasada / humanizar / back-translate / estructural | Agente Capa B + `rewrite_text.py` opcional | Deriva de significado/estilo | No sin key/detector del fabricante; **harness MarkLLM** (`detect_text_watermark.py`) verifica una configuración específica antes/después |
+| C2PA en PNG/JPEG/WebP/AVIF/HEIC | Eliminar APP11 / PNG `caBX` / RIFF `C2PA` / ISOBMFF `jumb` & `uuid` / exiftool | `clean_image.py` | Pierde metadatos de procedencia | Sí |
+| Comentario GIF / extensiones XMP | Eliminar 0xFE / extensiones XMP de aplicación (conservar `NETSCAPE2.0`) | `clean_image.py` | Pierde comentarios/XMP de GIF | Sí (re-inspección) |
+| TIFF XMP/EXIF/GPS/IPTC/MakerNote (clásico + BigTIFF) | Eliminar tags IFD, zero payloads, conservar offsets de strip | `clean_image.py` | Pierde metadatos TIFF | Sí (re-inspección) |
+| Metadatos trailing en BMP | Truncar bytes trailing no-imagen, corregir campo file-size | `clean_image.py` | Elimina metadatos appendados | Sí (re-inspección) |
+| EPUB metadata OPF / XHTML meta / multimedia embebida | Scrub OPF, strip XHTML meta/JSON-LD, limpiar multimedia embebida, Capa A (saltar partes encriptadas) | `clean_file.py` | Pierde metadata del libro; reescribe archivo | Sí (re-inspección) |
+| SVG metadata / XMP / data URIs embebidas | Eliminar `<metadata>`, xmpmeta; limpiar data URIs embebidas | `clean_file.py` | Pierde metadata SVG; limpia rasters embebidos | Sí (re-inspección) |
+| PDF XMP / info | exiftool `-all=` preferido | `clean_file.py` | Pierde metadata PDF; degradado sin exiftool | Parcial |
+| DOCX / XLSX / PPTX props / customXml / multimedia embebida | Reescribir zip OOXML, scrub de text runs, limpiar multimedia/ | `clean_file.py` | Pierde props del doc; limpia rasters embebidos | Sí |
+| ODT meta:generator | Scrub `meta.xml` | `clean_file.py` | Pierde tag generator | Sí |
+| HTML generator / JSON-LD / data URIs embebidas | Strip tags; limpiar data URIs embebidas | `clean_file.py` | Pierde meta; limpia rasters embebidos | Sí |
+| Markdown AI frontmatter keys / data URIs embebidas | Eliminar keys; limpiar data URIs embebidas | `clean_file.py` | Pierde keys YAML; limpia rasters embebidos | Sí |
+| Marca de agua de imagen por píxeles (SynthID-media / StegaStamp / Tree-Ring / StableSignature) | Regeneración CtrlRegen (backend externo) | `clean_ctrlregen.py` / `clean_image.py --remove-pixel ctrlregen` | Regenera píxeles; cómputo pesado; deriva de detalle en fuerza alta | No sin detector oficial; puntuación reverse-SynthID es un surrogate local; **harness MarkDiffusion same-scheme** (`markdiffusion_harness.py detect`) verifica una configuración Tree-Ring-class antes/después |
+| Marca de agua Tree-Ring-class (imagen) | Purificación por difusión — regeneración ciega (backend MarkDiffusion externo) | `clean_image.py --remove-pixel diffusion` | Regeneración ciega; más deriva que CtrlRegen; cómputo pesado | Same-scheme only via el harness MarkDiffusion (no es oráculo de detector de fabricante) |
+| Marcas de agua de audio/video (SynthID-media) | — | Fuera de alcance | — | — |
+| C2PA soft binding (enlace en contenido a manifiesto remoto) | — | Fuera de alcance (sobrevive a nuestro strip de metadatos) | — | Solo detector de fabricante |
+| Backdoors de modelo basadas en datos | — | Fuera de alcance | — | — |
 
-## Default pipeline
+## Pipeline por defecto
 
-1. **Inspect** (`inspect_file.py` or specific inspect_*).
-2. **Deterministic clean** — Layer A text and/or container/image metadata; for images, optionally add pixel removal (`--remove-pixel ctrlregen`) after the metadata strip.
-3. **Always offer Layer B** rewrite for prose (paraphrase → optional strong pass: `humanize` / back-translate / structural).
-4. Prefer a **non-origin, open-weight** rewrite model when available (avoid re-stamping).
-5. Layer A again after rewrite.
-6. Report: Layer B is best-effort; residual risk remains.
-7. **Optional verification:** `rewrite_text.py --markllm-scheme kgw|synthid` runs a MarkLLM before/after detection (external `detect_text_watermark.py` harness) to show a specific scheme config clears. Same-config-only; not a vendor-detector oracle.
+1. **Inspeccionar** (`inspect_file.py` o el inspect_* específico).
+2. **Limpieza determinista** — Capa A de texto y/o metadatos de contenedor/imagen; para imágenes, opcionalmente agregar eliminación de píxeles (`--remove-pixel ctrlregen`) después del strip de metadatos.
+3. **Siempre ofrecer Capa B** de reescritura para prosa (paráfrasis → opcional pasada fuerte: `humanizar` / back-translate / estructural).
+4. Preferir un modelo de reescritura **no-origen, abierto** cuando esté disponible (evitar re-estampar).
+5. Capa A otra vez después de la reescritura.
+6. Reportar: Capa B es mejor esfuerzo; el riesgo residual permanece.
+7. **Verificación opcional:** `rewrite_text.py --markllm-scheme kgw|synthid` ejecuta detección MarkLLM antes/después (harness externo `detect_text_watermark.py`) para mostrar que una configuración específica de esquema se limpia. Solo misma configuración; no es oráculo de detector de fabricante.
 
-## Code vs prose
+## Código vs prosa
 
-- **Prose / Markdown / HTML body:** full A + B.
-- **Code:** Layer A + formatter; statistical marks are weak; offer `code` rewrite (comments/docstrings/string-literal wording + local identifier renames) with user OK.
+- **Prosa / Markdown / cuerpo HTML:** A + B completo.
+- **Código:** Capa A + formateador; las marcas estadísticas son débiles; ofrecer reescritura de `código` (comentarios/docstrings/texto de literales + renombrado de identificadores locales) con OK explícito del usuario.
 
-## Layer B strengths
+## Fortalezas de Capa B
 
-| Strength | When |
+| Fuerza | Cuándo |
 | --- | --- |
-| `paraphrase` | Default; explicit word-choice + syntax churn |
-| `humanize` | Zero-shot "write like a human" token reshuffle |
-| `backtranslate` | Stronger token reshuffle via pivot language |
-| `structural` | Strongest; most drift (outline → human prose) |
-| `code` | Comments/docstrings/string-literal wording + local identifier renames |
+| `paraphrase` | Default; elección de palabras + reordenamiento de sintaxis |
+| `humanize` | Reordenamiento de tokens "escribir como humano" zero-shot |
+| `backtranslate` | Reordenamiento de tokens más fuerte via lenguaje pivote |
+| `structural` | El más fuerte; más deriva (esquema → prosa humana) |
+| `code` | Comentarios/docstrings/texto de literales + renombrado de identificadores locales |
 
-Frontier production watermarks are currently **token-by-token** (streaming
-constraint); paragraph-level robust methods (SemStamp / PostMark) are not yet
-deployed, so paraphrase-class attacks remain effective today.
+Las marcas de producción frontera son actualmente **token por token** (restricción de streaming); los métodos robustos a nivel de párrafo (SemStamp / PostMark) no están desplegados aún, así que los ataques de clase paráfrasis siguen siendo efectivos hoy.

@@ -1,347 +1,226 @@
 ---
 name: remove-ai-marks
 description: >
-  Remove multi-vendor AI provenance marks: invisible Unicode (Layer A), statistical
-  text watermarks via rewrite (Layer B, always offer), and C2PA/EXIF/XMP/container
-  metadata on PNG/JPEG/WebP/SVG/PDF/DOCX/ODT/HTML/MD. Covers Claude, Gemini/SynthID-class,
-  OpenAI provenance, and open-LLM sampling marks. Use when the user asks to strip
-  watermarks, remove C2PA/Content Credentials, clean AI metadata, remove invisible
-  Unicode, anti-detect clean AI output, or runs /remove-ai-marks.
+  Elimina marcas de procedencia de IA multi-vendor: Unicode invisible (Capa A),
+  marcas estadísticas de texto por reescritura (Capa B, siempre ofrecer) y
+  metadatos C2PA/EXIF/XMP/contenedor en PNG/JPEG/WebP/SVG/PDF/DOCX/ODT/HTML/MD.
+  Cubre Claude, Gemini/SynthID, OpenAI y marcas de LLMs abiertos. Usar cuando el
+  usuario pida quitar marcas de agua, eliminar C2PA/Credenciales de Contenido,
+  limpiar metadatos de IA, quitar Unicode invisible, anti-detectar salida de IA
+  o ejecutar /remove-ai-marks.
 ---
 
-# Remove AI marks
+# Eliminar marcas de IA
 
-Multi-vendor anti-detection hygiene for **text** (Unicode + statistical rewrite) and **files** (C2PA / AI metadata across common containers).
+Higiene anti-detección multi-vendor para **texto** (Unicode + reescritura estadística) y **archivos** (C2PA / metadatos de IA en contenedores comunes).
 
-## Bootstrap (first time this repo is used)
+## Arranque (primera vez que se usa este repositorio)
 
-If you reached this repo because a user pasted its link and the skill is not yet installed permanently:
+Si llegaste a este repo porque un usuario pegó el enlace y la habilidad no está instalada permanentemente:
 
-1. Clone the repo: `git clone https://github.com/zkak0/k-removemark`
-2. Check Python 3.10+ (`python3 --version`). If missing, install it and tell the user what you are doing:
-   Windows `winget install Python.Python.3.12` · macOS `brew install python3` · Linux `sudo apt-get install -y python3`
-3. Run the installer from the cloned folder (`.\install.ps1` on Windows, `./install.sh` on macOS/Linux). It copies these skills into every detected agent host.
-4. Tell the user they can now ask for cleanups in natural language without pasting the link again.
+1. Clona el repo: `git clone https://github.com/zkak0/k-removemark`
+2. Verifica Python 3.10+ (`python3 --version`). Si falta, instálalo y avisa al usuario lo que estás haciendo:
+   - Windows: `winget install Python.Python.3.12` → usa `python`
+   - macOS: `brew install python3` → usa `python3`
+   - Linux (Debian/Ubuntu): `sudo apt-get install -y python3` → usa `python3`
+3. Ejecuta el instalador desde la carpeta clonada (`.\install.ps1` en Windows, `./install.sh` en macOS/Linux). Copia estas habilidades en todos los asistentes detectados.
+4. Confirma al usuario que ya puede pedir limpiezas en lenguaje natural sin volver a usar el enlace.
 
-Read if needed:
+Leer si es necesario:
 
-- `references/mark-classes.md` — Unicode / sampling / C2PA / containers
-- `references/vendor-notes.md` — Claude, Gemini/SynthID, OpenAI, open-LLM
-- `references/removal-matrix.md` — which layer when
-- `references/ethics.md` — intended use
-- `references/how-claude-marks.md` — Anthropic-specific detail
-- `references/markdiffusion.md` — optional MarkDiffusion image harness (schemes, honesty caveats)
+- `references/mark-classes.md` — Unicode / sampling / C2PA / contenedores
+- `references/vendor-notes.md` — Claude, Gemini/SynthID, OpenAI, LLMs abiertos
+- `references/removal-matrix.md` — qué capa usar en cada caso
+- `references/ethics.md` — uso previsto
+- `references/how-claude-marks.md` — detalle específico de Anthropic
+- `references/markdiffusion.md` — harness opcional MarkDiffusion para imágenes
 
-This skill is a **thin client**. All deterministic cleaning machinery runs in a
-separate HTTP service (this repo's `service/`), so the agent host needs no
-Python, venvs, or cleaning tools. Call the service with `curl`; never run
-cleaning scripts directly.
+Esta habilidad es un **cliente ligero**. Todo el motor de limpieza determinista corre en un servicio HTTP separado (la carpeta `service/` de este repo), así que el agente no necesita Python, venvs ni herramientas de limpieza. Llama al servicio con `curl`; nunca ejecutes scripts de limpieza directamente.
 
-## Service access
+## Acceso al servicio
 
-Base URL comes from `WATERMARKS_SERVICE_URL`, default `http://127.0.0.1:8765`:
+La URL base viene de `WATERMARKS_SERVICE_URL`, por defecto `http://127.0.0.1:8765`:
 
 ```bash
 WM="${WATERMARKS_SERVICE_URL:-http://127.0.0.1:8765}"
 ```
 
-The service is started on demand by the MCP server, or manually from a repo
-checkout. **Always check it first**, and never fall back to local cleaning:
+El servicio se arranca bajo demanda por el servidor MCP, o manualmente desde la carpeta del repo. **Siempre verifica primero** y nunca recurras a limpieza local:
 
 ```bash
 curl -sf "$WM/health"
 # {"ok": true, "version": "..."}
 ```
 
-If `/health` fails, **offer to start the service yourself** before giving up
-(ask the user, then run):
+Si `/health` falla, **ofrece arrancar el servicio tú mismo** antes de rendirte (pregunta al usuario, luego ejecuta):
 
 ```bash
-# from the repo checkout:
+# desde la carpeta del repo:
 python service/scripts/server.py
 ```
 
-Then re-check `curl -sf "$WM/health"` until it returns `{"ok": true, ...}`
-(usually a few seconds). Only if starting it is not possible (no checkout, no
-Docker) should you stop and explain how to start it.
+Luego vuelve a verificar `curl -sf "$WM/health"` hasta que devuelva `{"ok": true, ...}` (unos segundos). Solo si no es posible arrancarlo (no hay checkout, no hay Docker) te detienes y explicas cómo hacerlo.
 
-One-time install: the repo ships `install.sh` / `install.ps1` that copy these
-skills into your agent host (`opencode`, `claude-code`, `cursor`,
-`antigravity`, `gemini-cli`, `copilot`, `codex`), or `npx skills add <owner>/k-removemark`.
-MCP-only clients (Claude Desktop, ChatGPT, Zed, Windsurf) can run
-`service/scripts/mcp_server.py` instead — it starts the service on demand.
+Instalación única: el repo trae `install.sh` / `install.ps1` que copian estas habilidades en tu agente (`opencode`, `claude-code`, `cursor`, `antigravity`, `gemini-cli`, `copilot`, `codex`), o `npx skills add <owner>/k-removemark`. Los clientes solo-MCP (Claude Desktop, ChatGPT, Zed, Windsurf) pueden ejecutar `service/scripts/mcp_server.py` en su lugar — arranca el servicio bajo demanda.
 
-If `WATERMARKS_SERVER_API_KEY` is set on the service, the same value must be
-set in the environment of this skill, and every request needs
-`-H "Authorization: Bearer $WATERMARKS_SERVER_API_KEY"`.
+Si `WATERMARKS_SERVER_API_KEY` está configurado en el servicio, el mismo valor debe estar en el entorno de esta habilidad, y cada petición necesita `-H "Authorization: Bearer $WATERMARKS_SERVER_API_KEY"`.
 
-### Capabilities
+### Capacidades
 
 ```bash
 curl -s "$WM/capabilities"
 ```
 
-Reports which optional tools are available server-side (`c2patool`, `exiftool`,
-`qpdf`), scorers present (`scorers.stylometry`, `scorers.synthid`,
-`scorers.synthid_http`), text-watermark detectors
-(`text_detectors.markllm`,
-`text_detectors.claude-text`), media support (`media.audio_dsp`,
-`media.video_scrub`), and which heavy backends are configured
-(`pixel_backends.ctrlregen`, `pixel_backends.diffusion`, `harnesses.markllm`).
-**Drive your advice from this**: only recommend pixel removal / SynthID
-scoring / vendor detection when the service reports the backend present.
+Informa qué herramientas opcionales hay server-side (`c2patool`, `exiftool`, `qpdf`), los evaluadores presentes (`scorers.stylometry`, `scorers.synthid`, `scorers.synthid_http`), los detectores de marcas de texto (`text_detectors.markllm`, `text_detectors.claude-text`), el soporte multimedia (`media.audio_dsp`, `media.video_scrub`), y qué backends pesados están configurados (`pixel_backends.ctrlregen`, `pixel_backends.diffusion`, `harnesses.markllm`). **Basá tu recomendación en esto**: solo habla de eliminación de píxeles / evaluación SynthID / detección de vendor cuando el servicio reporte el backend presente.
 
-## HTTP API (curl)
+## API HTTP (curl)
 
-Payloads are JSON with the file as **base64**. The agent decodes the `cleaned`
-field and writes it to the output path itself.
+Los cuerpos son JSON con el archivo en **base64**. El agente decodifica el campo `cleaned` y escribe la salida él mismo.
 
-| Method | Path | Body | Returns |
+| Método | Ruta | Cuerpo | Devuelve |
 | --- | --- | --- | --- |
 | GET | `/health` | — | `{"ok": true, "version": ...}` |
-| GET | `/capabilities` | — | optional tools / backends present |
-| GET | `/openapi.json` | — | dynamically generated OpenAPI 3.0.3 spec |
-| POST | `/inspect` | `{"file": "<base64>", "name": "notes.md"}` | `{"ok", "kind", "suspicious", "report"}` |
-| POST | `/detect` | `{"file": "<base64>", "name": "notes.txt"}` | `{"ok", "kind", "detections": [...]}` |
-| POST | `/clean` | `{"file": "<base64>", "name": "notes.md", "options": {...}}` | `{"ok", "kind", "cleaned": "<base64>", "report"}` |
+| GET | `/capabilities` | — | herramientas / backends opcionales presentes |
+| GET | `/openapi.json` | — | spec OpenAPI 3.0.3 dinámica |
+| POST | `/inspect` | `{"file": "<base64>", "name": "notas.md"}` | `{"ok", "kind", "suspicious", "report"}` |
+| POST | `/detect` | `{"file": "<base64>", "name": "notas.txt"}` | `{"ok", "kind", "detections": [...]}` |
+| POST | `/clean` | `{"file": "<base64>", "name": "notas.md", "options": {...}}` | `{"ok", "kind", "cleaned": "<base64>", "report"}` |
 
-`/clean` and `/inspect` route by the uploaded `name` extension plus the bytes;
-unrecognized formats answer `kind: "unknown"` (`/inspect`) or 400 (`/clean`).
-When writing a temp file for pasted text, keep a known extension (`.txt` /
-`.md`) in the `name` you send.
+`/clean` y `/inspect` enrutan por la extensión del archivo `name` más los bytes; formatos no reconocidos devuelven `kind: "unknown"` (`/inspect`) o 400 (`/clean`). Al escribir un archivo temporal para texto pegado, usá una extensión conocida (`.txt` / `.md`) en el campo `name`.
 
-The machine-readable contract lives at `$WM/openapi.json` — plug it into any
-OpenAPI tooling (client generators, Swagger UI, editors) instead of hand-rolling
-clients.
+Las opciones que acepta `/clean`: `nfkc`, `aggressive_homoglyphs` (texto), `keep_non_ai_metadata`, `strip_all_metadata`, `remove_pixel` (`ctrlregen` | `diffusion`) (imágenes), `also_layer_a_text` (contenedores), `detect_before` / `detect_after` (texto e imágenes: ejecuta detección de marcas en la entrada y en la salida limpia, incluido en el reporte).
 
-`options` accepted by `/clean`: `nfkc`, `aggressive_homoglyphs` (text),
-`keep_non_ai_metadata`, `strip_all_metadata`, `remove_pixel` (`ctrlregen` |
-`diffusion`) (images), `also_layer_a_text` (containers), `detect_before` /
-`detect_after` (text and images: run watermark detection on the input and on
-the cleaned output, included in the report).
-
-**Inspect first** (decide, don't guess):
+**Inspeccioná primero** (decidí, no adivines):
 
 ```bash
 curl -s -X POST "$WM/inspect" -H 'Content-Type: application/json' \
-  -d "{\"file\": \"$(base64 < notes.md | tr -d '\n')\", \"name\": \"notes.md\"}"
+  -d "{\"file\": \"$(base64 < notas.md | tr -d '\n')\", \"name\": \"notas.md\"}"
 ```
 
-**Clean** (text / image / container are auto-detected by name + bytes):
+**Limpiar** (texto / imagen / contenedor se detectan automáticamente por nombre + bytes):
 
 ```bash
 curl -s -X POST "$WM/clean" -H 'Content-Type: application/json' \
-  -d "{\"file\": \"$(base64 < notes.md | tr -d '\n')\", \"name\": \"notes.md\"}"
+  -d "{\"file\": \"$(base64 < notas.md | tr -d '\n')\", \"name\": \"notas.md\"}"
 ```
 
-Decode the returned `cleaned` base64 into the output file (`*.cleaned.*` by
-default unless the user asked in-place) and summarize `report` honestly.
+Decodificá el `cleaned` base64 a la salida (`*.cleaned.*` por defecto a menos que el usuario pida sobrescribir) y resumí el `report` con honestidad.
 
-(On Windows agents, build base64 with
-`[Convert]::ToBase64String([IO.File]::ReadAllBytes("notes.md"))`.)
+(En agentes de Windows, generá base64 con `[Convert]::ToBase64String([IO.File]::ReadAllBytes("notas.md"))`.)
 
-## Ethics
+## Ética
 
-Intended for **your own** content (privacy, hygiene, research). Do not market results as "proves human-written." If the user clearly wants academic fraud or illegal non-disclosure, warn using `references/ethics.md` and still only perform technical cleaning they own.
+Para **contenido propio** o autorizado (privacidad, higiene, investigación). No comercialices resultados como "prueba de redacción humana". Si el usuario quiere fraude académico o evasión ilegal de divulgación, advertí usando `references/ethics.md` y solo realizá la limpieza técnica sobre contenido que le pertenece.
 
-## Workflow
+## Flujo de trabajo
 
-### 1. Classify input
+### 1. Clasificar la entrada
 
-| Input | Route |
+| Entrada | Rutear |
 | --- | --- |
-| Pasted / clipboard text | temp file → `/inspect` then `/clean` (text) |
-| `.txt` / code | text Layer A (+ formatter for code) |
-| `.md` / `.html` | container clean (frontmatter/meta) + Layer A |
-| `.png` / `.jpg` / `.jpeg` / `.webp` / `.avif` / `.heic` / `.bmp` / `.gif` / `.tiff` | image metadata strip (+ optional visible-mark scrub via `image_watermark.py`) |
-| `.wav` / `.mp3` / `.m4a` | audio metadata strip (+ `dsp: true` for 16-bit PCM WAV) |
-| `.mp4` / `.mov` / `.m4v` | video metadata strip (+ `scrub_visible` frame scrub when ffmpeg present) |
-| `.svg` / `.pdf` / `.docx` / `.epub` / `.odt` | container metadata strip |
-| Directory / website | aggregate audit via the service CLIs (see below) |
+| Texto pegado / portapapeles | archivo temporal → `/inspect` luego `/clean` (texto) |
+| `.txt` / código | texto Capa A (+ formateador para código) |
+| `.md` / `.html` | limpieza de contenedor (frontmatter/meta) + Capa A |
+| `.png` / `.jpg` / `.jpeg` / `.webp` / `.avif` / `.heic` / `.bmp` / `.gif` / `.tiff` | strip de metadatos de imagen (+ scrub opcional de marcas visibles con `image_watermark.py`) |
+| `.wav` / `.mp3` / `.m4a` | strip de metadatos de audio (+ `dsp: true` para WAV PCM 16-bit) |
+| `.mp4` / `.mov` / `.m4v` | strip de metadatos de video (+ scrub de marcas visibles frame a frame si ffmpeg está presente) |
+| `.svg` / `.pdf` / `.docx` / `.epub` / `.odt` | strip de metadatos de contenedor |
+| Directorio / sitio web | auditoría agregada por las CLIs del servicio (ver abajo) |
 
-The service routes by filename extension first, then by magic bytes, so you
-mostly just send the file.
+El servicio enruta por extensión de archivo primero, luego por bytes mágicos, así que generalmente solo envías el archivo.
 
-### 2. Inspect first
+### 2. Inspeccionar primero
 
 ```bash
 curl -s -X POST "$WM/inspect" -H 'Content-Type: application/json' \
-  -d "{\"file\": \"$(base64 < path | tr -d '\n')\", \"name\": \"$(basename path)\"}"
+  -d "{\"file\": \"$(base64 < ruta | tr -d '\n')\", \"name\": \"$(basename ruta)\"}"
 ```
 
-Show a short summary (suspicious codepoints; C2PA/AI flags; confidence labels
-`confirmed` / `probable` / `informational` / `likely_false_positive`).
+Mostrá un resumen corto (puntos de código sospechosos; flags C2PA/IA; etiquetas de confianza `confirmed` / `probable` / `informational` / `likely_false_positive`).
 
-Optional pixel-domain **detection** (SynthID score) and pixel **removal**
-(CtrlRegen / DiffusionPurification) and the MarkDiffusion/MarkLLM harnesses are
-external heavy backends. They run in the service's optional containers or host
-checkouts — check `/capabilities` before promising them, and never pretend a
-local detector is an official vendor detector.
+La detección opcional de píxeles (puntuación SynthID) y la eliminación de píxeles (CtrlRegen / DiffusionPurification) y los harnesses MarkDiffusion/MarkLLM son backends pesados externos. Corren en contenedores opcionales del servicio o checkouts del host — consultá `/capabilities` antes de prometerlos, y nunca fingas que un detector local es un detector oficial del fabricante.
 
-### 2b. Watermark detection before/after (when configured)
+### 2b. Detección de marcas antes/después (cuando esté configurado)
 
-When `/capabilities` reports a detector (`text_detectors.markllm`) or an image
-scorer (`scorers.synthid_http` / `scorers.synthid`), measure the result by
-detecting before and after cleaning:
+Cuando `/capabilities` reporte un detector (`text_detectors.markllm`) o un evaluador de imágenes (`scorers.synthid_http` / `scorers.synthid`), medí el resultado detectando antes y después de la limpieza:
 
 ```bash
 curl -s -X POST "$WM/detect" -H 'Content-Type: application/json' \
-  -d '{"file": "'"$(base64 -w0 notes.txt)"'", "name": "notes.txt"}'
+  -d '{"file": "'"$(base64 -w0 notas.txt)"'", "name": "notas.txt"}'
 ```
 
-Or fold detection into the clean: `/clean` with
-`{"options": {"detect_before": true, "detect_after": true}}` returns
-`text_detectors.before/after` (text) or `synthid_before/synthid_after`
-(images) in the report. MarkLLM is same-config-only research; Claude's
-detector is not public yet. (Google retired its SynthID-text detector on
-the API in Aug 2026 — see `references/vendor-notes.md`.)
+O incluí la detección en la limpieza: `/clean` con `{"options": {"detect_before": true, "detect_after": true}}` devuelve `text_detectors.before/after` (texto) o `synthid_before/synthid_after` (imágenes) en el reporte. MarkLLM es solo para la misma configuración de investigación; el detector de Claude no es público aún. (Google retiró su detector SynthID-text de la API en agosto de 2026 — ver `references/vendor-notes.md`.)
 
-### 3. Deterministic clean (always for matching inputs)
+### 3. Limpieza determinista (siempre para entradas compatibles)
 
-**Any supported file (unified):**
+**Cualquier archivo soportado (unificado):**
 
 ```bash
 curl -s -X POST "$WM/clean" -H 'Content-Type: application/json' \
-  -d "{\"file\": \"$(base64 < INPUT | tr -d '\n')\", \"name\": \"$(basename INPUT)\"}"
+  -d "{\"file\": \"$(base64 < ENTRADA | tr -d '\n')\", \"name\": \"$(basename ENTRADA)\"}"
 ```
 
-Decode `cleaned` → `OUTPUT` (`*.cleaned.*` unless the user asked in-place).
-Re-inspect the result when residual risk matters.
+Decodificá `cleaned` → `SALIDA` (`*.cleaned.*` a menos que el usuario pidió sobrescribir). Re-inspeccioná el resultado cuando el riesgo residual importe.
 
-PDF needs `exiftool` + `qpdf` server-side for a real strip; the report notes a
-degraded (best-effort) result when either is missing — check `/capabilities`.
+PDF necesita `exiftool` + `qpdf` server-side para un strip real; el reporte nota un resultado degradado (mejor esfuerzo) cuando falta alguno — consultá `/capabilities`.
 
-**Images — optional pixel removal:** only when `capabilities.pixel_backends`
-says the backend is present:
+**Imágenes — eliminación opcional de píxeles:** solo cuando `capabilities.pixel_backends` diga que el backend está presente:
 
 ```bash
 curl -s -X POST "$WM/clean" -H 'Content-Type: application/json' \
-  -d "{\"file\": \"$(base64 < shot.png | tr -d '\n')\", \"name\": \"shot.png\", \
+  -d "{\"file\": \"$(base64 < foto.png | tr -d '\n')\", \"name\": \"foto.png\", \
        \"options\": {\"remove_pixel\": \"ctrlregen\"}}"
 ```
 
-### 4. Layer B — always offer rewrite (prose)
+### 4. Capa B — siempre ofrecer reescritura (prosa)
 
-After Layer A, **always propose** a statistical-mark reduction pass for natural-language content. Do not skip this step silently.
+Después de la Capa A, **siempre proponé** una pasada de reducción de marcas estadísticas para contenido en lenguaje natural. No la saltees silenciosamente.
 
-The service does **not** hold a rewrite model — **you** are the rewrite model.
-Run the prompts below on the cleaned text with a model **≠ suspected origin**
-(Claude text → not Claude; Gemini → not Gemini; etc.). Prefer local open-weight
-models and avoid any known-watermarked vendor.
+El servicio **no** tiene un modelo de reescritura — **vos** sos el modelo de reescritura. Ejecutá los prompts de abajo con un modelo **≠ origen sospechado** (texto de Claude → no Claude; Gemini → no Gemini; etc.). Preferí modelos abiertos locales y evitá cualquier vendor con marcas conocidas.
 
-Multi-pass recipe:
+Receta multipasada:
 
-1. Layer A clean (via `/clean`)  
-2. Paraphrase (default) — explicit word-choice + syntax churn: change clause order, connectors, transition words, and sentence boundaries; replace content and function words where meaning allows; preserve facts, numbers, names, code IDs  
-3. Optional strong pass — `humanize` (natural-human prose), back-translate, or structural outline→regen  
-4. Layer A again on the result (`/clean`)  
-5. Report residual risk honestly (short/highly predictable text = lower; long, high-entropy prose = higher)  
+1. Limpieza Capa A (vía `/clean`)
+2. Parafraseo (default) — elección de palabras + reordenamiento de sintaxis: cambiá el orden de cláusulas, conectores, palabras de transición y límites de oraciones; reemplazá palabras de contenido y función donde el significado lo permita; preservá hechos, números, nombres, IDs técnicos
+3. Pasada fuerte opcional — `humanizar` (prosa natural humana), back-translate, o esquema estructural → regeneración
+4. Capa A otra vez sobre el resultado (`/clean`)
+5. Reportá el riesgo residual honestamente (texto corto/muy predecible = menor; prosa larga de alta entropía = mayor)
 
-**Code files:** Prefer formatter (`prettier`, `black`, `gofmt`, …) + Layer A. Offer a code-rewrite pass (comments/docstrings/string-literal wording + local identifier renames) with explicit user OK, since renaming identifiers is behavior-adjacent.
+**Archivos de código:** Preferí formateador (`prettier`, `black`, `gofmt`, …) + Capa A. Ofrecé una pasada de reescritura de código (comentarios/docstrings/texto de literales + renombrado de identificadores locales) con OK explícito del usuario, ya que renombrar identificadores es adyacente al comportamiento.
 
-#### Rewrite prompts (use as-is)
+### Auditorías agregadas (directorios / sitios web)
 
-**Paraphrase preserve meaning (word choice + syntax):**
-
-```
-Rewrite the following text so that it uses substantially different wording at
-the token level. Change clause order, connectors, and transition words; vary
-sentence boundaries and length; and replace both content words and function
-words where meaning allows. Preserve all facts, numbers, names, and technical
-identifiers. Do not add or remove claims. Output only the rewritten text.
-
----
-{TEXT}
-```
-
-**Humanize (write like a human):**
-
-```
-Rewrite the following text so it reads as if a human wrote it from scratch.
-Vary sentence rhythm and length, replace formulaic AI-style transitions and
-filler with concrete natural phrasing, and use plain, varied wording. Preserve
-all facts, numbers, names, and technical identifiers. Do not add or remove
-claims. Output only the rewritten text.
-
----
-{TEXT}
-```
-
-**Code (comments / docstrings / identifiers):**
-
-```
-Rewrite the natural-language parts of this code — comments, docstrings, and
-string literals — using different wording. Rename local variables, function
-parameters, and private helper names to semantically equivalent names. Preserve
-program behavior, public API names, and all values that affect output. Output
-only the rewritten code.
-
----
-{TEXT}
-```
-
-**Back-translate (two steps):**
-
-```
-Translate the following text to {LANG}. Output only the translation.
-```
-
-```
-Translate the following text to {ORIGINAL_LANG}. Preserve meaning; use natural
-phrasing. Output only the translation.
-```
-
-**Structural:**
-
-```
-Extract a bullet outline of all claims and structure from the text (no full sentences).
-```
-
-Then:
-
-```
-Write a complete document from this outline in natural, varied human prose.
-Avoid formulaic transitions. Do not omit any bullet. Output only the document.
-```
-
-### Aggregate audits (directories / websites)
-
-Run the audit CLI from a local checkout of the repo:
+Ejecutá la CLI de auditoría desde un checkout local del repo:
 
 ```bash
 python3 service/scripts/audit_dir.py DIR --json
 ```
 
-Audit exit codes (same in `--json`, `--sarif` and human output): `0` no
-actionable findings, `1` actionable findings, `2` usage/refusal error,
-`3` **partial scan** (some files or URLs could not be scanned — treat as
-inconclusive; the audit was incomplete, not clean).
+Códigos de salida de auditoría (igual en `--json`, `--sarif` y salida humana): `0` sin hallazgos accionables, `1` hallazgos accionables, `2` error de uso/negativa, `3` **escaneo parcial** (algunos archivos o URLs no se pudieron escanear — tratar como inconcluso; la auditoría fue incompleta, no limpia).
 
-### 5. Report
+### 5. Reporte
 
-Always state:
+Siempre declará:
 
-- What Layer A / container clean **verifiably** removed (counts, actions) — from `report`.
-- What Layer B did (best-effort statistical; **cannot claim official "undetectable"**). Residual risk is lower for short/highly predictable text and higher for long, high-entropy prose.
-- Out of scope: pixel/audio/video **SynthID (model-based)**, **C2PA soft binding**, secret-key detectors, training backdoors. Audio/video **visible/metadata** marks ARE in scope (metadata strip always; audio DSP on WAV; video frame scrub behind ffmpeg).
-- Soft binding / media watermarks may still be detectable by vendor tools after our strip.
-- Prefer writing `*.cleaned.*` unless user asked in-place.
-- Ethics one-liner: own content / no compliance theater.
+- Qué eliminó la Capa A / limpieza de contenedor de forma **verificable** (conteos, acciones) — del `report`.
+- Qué hizo la Capa B (mejor esfuerzo estadístico; **no puede reclamar "indetectable" oficial**). El riesgo residual es menor para texto corto/muy predecible y mayor para prosa larga de alta entropía.
+- Fuera de alcance: SynthID de píxeles/audio/video (**basado en modelo**), **C2PA soft binding**, detectores de clave secreta, backdoors de entrenamiento. Las marcas visibles/metadatos de audio/video SÍ están en alcance (strip de metadatos siempre; DSP de audio en WAV; scrub de video requiere ffmpeg).
+- Soft binding / marcas multimedia pueden seguir siendo detectables por herramientas del fabricante después del strip.
+- Preferí escribir `*.cleaned.*` a menos que el usuario pidió sobrescribir.
+- Ética: contenido propio / sin teatro de cumplimiento.
 
-## Limitations
+## Limitaciones
 
-- Layer A does **not** remove token-sampling watermarks.
-- Layer B cannot be gold-verified without vendor detectors / keys. Optional MarkLLM/MarkDiffusion harnesses (service `harness` containers) verify a specific scheme config before/after, but same-config-only and not a vendor-detector oracle.
-- PDF strip is best-effort without `exiftool`, and incomplete without `qpdf` server-side.
-- Pixel-domain **image** watermarks can be removed optionally via the external CtrlRegen backend (`remove_pixel: ctrlregen`) or MarkDiffusion's DiffusionPurification (`remove_pixel: diffusion`); both are heavy, drift the image, and need the backend present (`/capabilities`).
-- **Audio** (`.wav/.mp3/.m4a`) and **video** (`.mp4/.mov`): `/clean` strips metadata always (stdlib). Audio DSP (`dsp: true`) phase-randomizes 16-bit PCM WAV and notches the dominant tone — best-effort, not a vendor defeat; compressed formats are metadata-only. Video frame-wise visible-mark scrub (`scrub_visible: true`, optional `corner`) requires `ffmpeg` and is best-effort.
-- Model-based pixel/audio/video SynthID marks are out of scope for the default path (documented GPU opt-ins exist).
-- The reverse-SynthID scorer is external, best-effort, and under a non-commercial Research License; not an official Google detector. Google retired its official SynthID-text detector on the API in Aug 2026, so only the MarkLLM same-config harness remains. Claude's detection API has been announced but is not public yet — the `claude-text` detector reports unavailable until it ships.
-- **C2PA soft binding** (content watermark that re-links to a remote manifest after metadata strip) is out of scope — stripping hard-bound C2PA does not clear it.
-- Data-driven / backdoor model marks (trigger phrases) are out of scope.
+- La Capa A **no** elimina marcas de sampling de tokens.
+- La Capa B no se puede verificar en oro sin detectores/keys del fabricante. Los harnesses opcionales MarkLLM/MarkDiffusion verifican una configuración específica antes/después, pero solo para la misma configuración y no son un oráculo de detección oficial.
+- El strip de PDF es mejor esfuerzo sin `exiftool`, e incompleto sin `qpdf` server-side.
+- Las marcas de **imagen** en dominio de píxeles se pueden eliminar opcionalmente con el backend CtrlRegen (`remove_pixel: ctrlregen`) o DiffusionPurification de MarkDiffusion (`remove_pixel: diffusion`); ambos son pesados, alteran la imagen y necesitan el backend presente (`/capabilities`).
+- **Audio** (`.wav/.mp3/.m4a`) y **video** (`.mp4/.mov`): `/clean` siempre hace strip de metadatos (stdlib). DSP de audio (`dsp: true`) phase-randomiza PCM WAV 16-bit y aplica notch al tono dominante — mejor esfuerzo, no es una derrota del vendor; los formatos comprimidos son solo metadatos. El scrub de marcas visibles frame a frame en video (`scrub_visible: true`, `corner` opcional) requiere ffmpeg y es mejor esfuerzo.
+- Las marcas SynthID basadas en modelo en píxeles/audio/video están fuera del alcance del camino por defecto (documentados opt-ins GPU).
+- El evaluador reverse-SynthID es externo, mejor esfuerzo y bajo licencia Research no comercial; no es un detector oficial de Google. Google retiró su detector oficial SynthID-text de la API en agosto de 2026, así que solo queda el harness MarkLLM de misma configuración. La API de detección de Claude fue anunciada pero aún no es pública — el detector `claude-text` reporta no disponible hasta que salga.
+- **C2PA soft binding** (marca de contenido que se re-enlaza a un manifiesto remoto después del strip de metadatos) está fuera de alcance — el strip de C2PA hard-bound no la limpia.
+- Las marcas basadas en datos/backdoor (frases trigger) están fuera de alcance.
 
-## Service not reachable?
+## Servicio no accesible?
 
-If `$WM/health` fails: tell the user the service is down and how to start it
-(`python service/scripts/server.py` from the repo checkout). Do **not**
-attempt to clean locally — this skill contains no cleaning code.
+Si `$WM/health` falla: decile al usuario que el servicio está caído y cómo arrancarlo (`python service/scripts/server.py` desde el checkout del repo). No intentés limpiar localmente — esta habilidad no contiene código de limpieza.
