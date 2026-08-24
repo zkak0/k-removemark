@@ -17,7 +17,7 @@ Este `plugin.json` (raíz) expone ambos skills como un plugin instalable:
 
 ## Requisitos
 
-- El servicio local HTTP (`service/scripts/server.py`, `make serve`) debe estar
+- El servicio local HTTP (`service/scripts/server.py`) debe estar
   arrancado para que `/remove-ai-marks` funcione de verdad. El skill lo detecta
   vía `/capabilities` y nunca finge.
 - Variables de clave estadística: `WATERMARKS_STATISTICAL_KEY` etc. (opcional).

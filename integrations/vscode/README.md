@@ -18,7 +18,7 @@ VS Code no tiene un mecanismo único de skills; depende del asistente instalado:
 ## Uso
 
 - **Copilot skills**: invoca el skill por nombre; el skill arranca/usa el
-  servicio local HTTP (`make serve`) y respeta `/capabilities`.
+  servicio local HTTP (`python service/scripts/server.py`) y respeta `/capabilities`.
 - **Cline / Roo**: los skills son archivos de texto que el agente lee; pide
   "usa el skill remove-ai-marks para este archivo".
 - **Reglas globales**: añade `alwaysApply` de `.cursor/rules/remove-ai-marks.mdc`

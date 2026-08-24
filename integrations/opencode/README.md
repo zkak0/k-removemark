@@ -24,7 +24,7 @@ Reinicia opencode y pide algo como:
 - "ejecuta /remove-ai-marks"
 
 El skill habla con el servicio local HTTP en `http://127.0.0.1:8765`
-(arranca con `make serve`). Si el servicio no está, el skill lo explica.
+(arranca con `python service/scripts/server.py`). Si el servicio no está, el skill lo explica.
 
 ## Configuración opcional
 
