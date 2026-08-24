@@ -140,8 +140,19 @@ print("Conector MCP de Claude Desktop configurado con éxito.")
 PYEOF
 fi
 
+# Precalentar el servicio HTTP para que la primera llamada sea instantánea
+echo ""
+echo "Precalentando servicio HTTP local..."
+nohup python3 service/scripts/server.py >/dev/null 2>&1 &
+sleep 2
+if curl -sf http://127.0.0.1:8765/health >/dev/null 2>&1; then
+  echo "Servicio HTTP listo en http://127.0.0.1:8765"
+else
+  echo "El servicio se iniciara bajo demanda."
+fi
+
 cat <<'EOF'
 
-Done. Restart your agent. If the local HTTP service is not running, the skill
-will tell you how to start it (make serve / docker compose up -d).
+Done. Restart your agent. If the local HTTP service is not running, run:
+  python3 service/scripts/server.py
 EOF
