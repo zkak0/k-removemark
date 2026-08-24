@@ -35,38 +35,39 @@ DEFAULT_PROTOCOL_VERSION = "2025-06-18"
 TOOLS = [
     {
         "name": "get_health",
-        "description": "Check that the k-removemark service is up and report its version.",
+        "description": "Verifica que el servicio k-removemark esté activo y reporta su versión.",
         "inputSchema": {"type": "object", "properties": {}, "required": []},
     },
     {
         "name": "detect_text",
         "description": (
-            "Run watermark detectors on text: statistical KGW/SynthID-class (keyed), "
-            "stylometry heuristic, and vendor seams when available. Detectors that "
-            "need a key report unavailable rather than guessing."
+            "Ejecuta detectores de marcas de agua en texto: marcas estadísticas KGW/SynthID "
+            "(con clave), heurística de estilometría y señales de vendor cuando estén disponibles. "
+            "Los detectores que necesitan clave reportan no disponible en vez de adivinar."
         ),
         "inputSchema": {
             "type": "object",
-            "properties": {"text": {"type": "string", "description": "Text to scan"}},
+            "properties": {"text": {"type": "string", "description": "Texto a escanear"}},
             "required": ["text"],
         },
     },
     {
         "name": "inspect",
         "description": (
-            "Inspect a file (text, image, container, audio/video) for AI provenance "
-            "marks: invisible Unicode, C2PA/EXIF/XMP/IPTC metadata, visible marks."
+            "Inspecciona un archivo (texto, imagen, contenedor, audio/video) en busca de "
+            "marcas de procedencia de IA: Unicode invisible, metadatos C2PA/EXIF/XMP/IPTC, "
+            "marcas visibles."
         ),
         "inputSchema": {
             "type": "object",
             "properties": {
                 "content": {
                     "type": "string",
-                    "description": "Base64-encoded file bytes (use encode_file for help)",
+                    "description": "Bytes del archivo codificados en base64",
                 },
                 "name": {
                     "type": "string",
-                    "description": "Original filename; extension routes format",
+                    "description": "Nombre original del archivo; la extensión define el formato",
                 },
             },
             "required": ["content", "name"],
@@ -75,21 +76,21 @@ TOOLS = [
     {
         "name": "clean",
         "description": (
-            "Clean AI provenance marks from a file. Returns cleaned bytes (base64), "
-            "an actions/stats report, and residual-risk flags. Use on content the "
-            "user owns or is authorized to process."
+            "Limpia marcas de procedencia de IA de un archivo. Devuelve los bytes limpios "
+            "(base64), un informe de acciones/estadísticas y flags de riesgo residual. "
+            "Usar solo en contenido propio o autorizado."
         ),
         "inputSchema": {
             "type": "object",
             "properties": {
                 "content": {
                     "type": "string",
-                    "description": "Base64-encoded file bytes",
+                    "description": "Bytes del archivo codificados en base64",
                 },
-                "name": {"type": "string", "description": "Original filename"},
+                "name": {"type": "string", "description": "Nombre original del archivo"},
                 "options": {
                     "type": "object",
-                    "description": "Optional clean flags, e.g. nfkc, aggressive_homoglyphs",
+                    "description": "Opciones de limpieza, ej: nfkc, aggressive_homoglyphs",
                 },
             },
             "required": ["content", "name"],

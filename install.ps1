@@ -140,3 +140,19 @@ if (Test-Path $claudeConfigDir) {
     Set-Content -Path $claudeConfigFile -Value $configJson -Encoding UTF8
     Write-Host "Conector MCP de Claude Desktop configurado con éxito."
 }
+
+# Precalentar el servicio HTTP para que la primera llamada sea instantánea
+Write-Host ""
+Write-Host "Precalentando servicio HTTP local..."
+try {
+    $pyExe = "python"
+    try { & python --version 2>$null | Out-Null } catch { $pyExe = "python3" }
+    Start-Process -FilePath $pyExe -ArgumentList "service\scripts\server.py" -WindowStyle Hidden -WorkingDirectory $Root | Out-Null
+    Start-Sleep -Milliseconds 800
+    try {
+        $r = Invoke-WebRequest -Uri "http://127.0.0.1:8765/health" -UseBasicParsing -TimeoutSec 3 -ErrorAction SilentlyContinue
+        if ($r.StatusCode -eq 200) { Write-Host "Servicio HTTP listo en http://127.0.0.1:8765" }
+    } catch {}
+} catch {
+    Write-Host "El servicio se iniciara bajo demanda."
+}
