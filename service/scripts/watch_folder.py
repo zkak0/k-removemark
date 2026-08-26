@@ -58,10 +58,9 @@ def _save_state(input_dir: Path, state: dict) -> None:
     _state_path(input_dir).write_text(json.dumps(state, indent=2, sort_keys=True), encoding="utf-8")
 
 
-def _signature(path: Path) -> tuple[int, float]:
+def _signature(path: Path) -> tuple[int, int]:
     st = path.stat()
-    return st.st_size, st.st_mtime
-
+    return st.st_size, st.st_mtime_ns
 
 def _clean_one(path: Path) -> bool:
     """Returns True if the file was changed by cleaning."""
@@ -87,7 +86,6 @@ def _clean_one(path: Path) -> bool:
         stats.get("removed_count") or stats.get("replaced_count") or result.get("actions")
     )
     return changed
-
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__)
@@ -125,12 +123,11 @@ def main() -> int:
                     continue
                 if path.name == STATE_NAME:
                     continue
-                if path.name.startswith("."):
+                if path.name.startswith(".") or path.suffix == ".bak":
                     continue
                 sig = _signature(path)
                 if state.get(str(path)) == sig:
                     continue
-                state[str(path)] = sig
                 if args.in_place:
                     target = path
                 else:
@@ -140,9 +137,11 @@ def main() -> int:
                     except OSError as exc:
                         log.info("copy failed for %s: %s", path.name, exc)
                         continue
-                if _clean_one(target):
+                changed = _clean_one(target)
+                if changed:
                     cleaned_any = True
                     log.info("cleaned: %s", path.name)
+                state[str(path)] = _signature(path)
             _save_state(args.input, state)
             if args.once:
                 break

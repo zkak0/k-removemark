@@ -119,8 +119,7 @@ $claudeConfigFile = Join-Path $claudeConfigDir "claude_desktop_config.json"
 if (Test-Path $claudeConfigDir) {
     Write-Host "`nConfigurando conector MCP para Claude Desktop de forma automática..."
     $mcpPath = Join-Path $Root "service\scripts\mcp_server.py"
-    $mcpPathEscaped = $mcpPath.Replace("\", "\\")
-    
+
     $config = @{ mcpServers = @{} }
     if (Test-Path $claudeConfigFile) {
         try {
@@ -134,7 +133,7 @@ if (Test-Path $claudeConfigDir) {
     }
     $config.mcpServers."k-removemark" = @{
         command = "python"
-        args = @($mcpPathEscaped)
+        args = @($mcpPath)
     }
     $configJson = ConvertTo-Json $config -Depth 10
     Set-Content -Path $claudeConfigFile -Value $configJson -Encoding UTF8
@@ -147,7 +146,16 @@ Write-Host "Precalentando servicio HTTP local..."
 try {
     $pyExe = "python"
     try { & python --version 2>$null | Out-Null } catch { $pyExe = "python3" }
-    Start-Process -FilePath $pyExe -ArgumentList "service\scripts\server.py" -WindowStyle Hidden -WorkingDirectory $Root | Out-Null
+    $envW = @{}
+    if ($env:WATERMARKS_SERVER_API_KEY) { $envW["WATERMARKS_SERVER_API_KEY"] = $env:WATERMARKS_SERVER_API_KEY }
+    $psi = New-Object System.Diagnostics.ProcessStartInfo
+    $psi.FileName = $pyExe
+    $psi.Arguments = "service\scripts\server.py"
+    $psi.WorkingDirectory = $Root
+    $psi.UseShellExecute = $false
+    $psi.CreateNoWindow = $true
+    foreach ($k in $envW.Keys) { $psi.EnvironmentVariables[$k] = $envW[$k] }
+    [System.Diagnostics.Process]::Start($psi) | Out-Null
     Start-Sleep -Milliseconds 800
     try {
         $r = Invoke-WebRequest -Uri "http://127.0.0.1:8765/health" -UseBasicParsing -TimeoutSec 3 -ErrorAction SilentlyContinue
@@ -156,3 +164,7 @@ try {
 } catch {
     Write-Host "El servicio se iniciara bajo demanda."
 }
+Write-Host ""
+Write-Host "(opcional) Para proteger el servicio HTTP local de accesos no autorizados,"
+Write-Host "podés setear la variable WATERMARKS_SERVER_API_KEY antes de la instalacion:"
+Write-Host "  $env:WATERMARKS_SERVER_API_KEY='tu-clave-secreta'; .\install.ps1"

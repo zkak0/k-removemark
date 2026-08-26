@@ -139,14 +139,16 @@ def _http_json(path: str, body: dict | None = None, timeout: float = 10.0) -> di
 
 def _spawn_service(log_path: Path) -> None:
     """Start server.py detached, logging to a temp file."""
-    kwargs: dict = {"stdout": log_path.open("ab"), "stderr": subprocess.STDOUT}
+    kwargs: dict = {"stderr": subprocess.STDOUT}
     if os.name == "nt":
         kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
-    subprocess.Popen(
-        [sys.executable, str(SERVER_SCRIPT)],
-        close_fds=True,
-        **kwargs,
-    )
+    with log_path.open("ab") as log_f:
+        kwargs["stdout"] = log_f
+        subprocess.Popen(
+            [sys.executable, str(SERVER_SCRIPT)],
+            close_fds=True,
+            **kwargs,
+        )
 
 
 def ensure_service(timeout: float = 20.0) -> dict:
@@ -272,7 +274,31 @@ def serve_stdio() -> int:
             continue
         try:
             msg = json.loads(payload)
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, TypeError) as exc:
+            sys.stdout.write(
+                json.dumps(
+                    {
+                        "jsonrpc": "2.0",
+                        "id": None,
+                        "error": {"code": -32700, "message": f"Parse error: {exc}"},
+                    }
+                )
+                + "\n"
+            )
+            sys.stdout.flush()
+            continue
+        if not isinstance(msg, dict):
+            sys.stdout.write(
+                json.dumps(
+                    {
+                        "jsonrpc": "2.0",
+                        "id": None,
+                        "error": {"code": -32600, "message": "Invalid Request: expected object"},
+                    }
+                )
+                + "\n"
+            )
+            sys.stdout.flush()
             continue
         reply = handle_message(msg)
         if reply is not None:

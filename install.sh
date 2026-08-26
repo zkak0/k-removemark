@@ -155,4 +155,9 @@ cat <<'EOF'
 
 Done. Restart your agent. If the local HTTP service is not running, run:
   python3 service/scripts/server.py
+
+(opcional) Para proteger el servicio HTTP local de accesos no autorizados,
+podés setear la variable WATERMARKS_SERVER_API_KEY antes de ejecutar install.sh:
+  export WATERMARKS_SERVER_API_KEY="tu-clave-secreta"
+  ./install.sh
 EOF
