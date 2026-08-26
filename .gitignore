@@ -12,6 +12,12 @@
 !/AGENTS.md
 !/CODE_OF_CONDUCT.md
 !/GUIA_USUARIO.md
+!/actualizar-asistente.bat
+!/actualizar-asistente.command
+!/desinstalar.ps1
+!/desinstalar.sh
+!/desinstalar-asistente.bat
+!/desinstalar-asistente.command
 !/install.sh
 !/install.ps1
 !/instalar-asistente.bat

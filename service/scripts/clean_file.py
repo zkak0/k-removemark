@@ -123,7 +123,7 @@ def main() -> int:
             print(json.dumps(result, indent=2, ensure_ascii=False))
         else:
             eprint(
-                f"wrote {dest} removed={stats['removed_count']} replaced={stats['replaced_count']}"
+                f"escrito {dest} eliminados={stats['removed_count']} reemplazados={stats['replaced_count']}"
             )
         return 0
 

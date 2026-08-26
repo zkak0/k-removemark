@@ -28,6 +28,7 @@ VERSION = os.environ.get("WATERMARKS_SERVER_VERSION", "dev")
 SERVICE_URL = os.environ.get("WATERMARKS_SERVER_URL", "http://127.0.0.1:8765").rstrip("/")
 API_KEY = os.environ.get("WATERMARKS_SERVER_API_KEY", "").strip()
 SERVER_SCRIPT = Path(__file__).with_name("server.py")
+MAX_LOG_BYTES = 5 * 1024 * 1024  # rotate the service log past 5 MB
 
 _KNOWN_VERSIONS = ("2024-11-05", "2025-03-26", "2025-06-18")
 DEFAULT_PROTOCOL_VERSION = "2025-06-18"
@@ -115,9 +116,13 @@ ALLOWED_CLEAN_OPTIONS = frozenset(
 )
 
 
+class ServiceHTTPStatus(RuntimeError):
+    """The service answered with a non-2xx status (alive but unhappy)."""
+
+
 def _http_json(path: str, body: dict | None = None, timeout: float = 10.0) -> dict:
     if not SERVICE_URL.startswith(("http://", "https://")):
-        raise RuntimeError(f"WATERMARKS_SERVER_URL must be http(s): {SERVICE_URL}")
+        raise ValueError(f"WATERMARKS_SERVER_URL must be http(s): {SERVICE_URL}")
     url = SERVICE_URL + path
     headers = {"Content-Type": "application/json"}
     if API_KEY:
@@ -132,7 +137,7 @@ def _http_json(path: str, body: dict | None = None, timeout: float = 10.0) -> di
             return json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         detail = e.read().decode("utf-8", "replace")[:300]
-        raise RuntimeError(f"service {path} returned {e.code}: {detail}") from e
+        raise ServiceHTTPStatus(f"service {path} returned {e.code}: {detail}") from e
     except urllib.error.URLError as e:
         raise RuntimeError(f"cannot reach service at {SERVICE_URL}: {e.reason}") from e
 
@@ -142,6 +147,12 @@ def _spawn_service(log_path: Path) -> None:
     kwargs: dict = {"stderr": subprocess.STDOUT}
     if os.name == "nt":
         kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
+    try:
+        # Log rotation: a runaway service loop must not grow the log forever.
+        if log_path.exists() and log_path.stat().st_size > MAX_LOG_BYTES:
+            log_path.unlink()
+    except OSError:
+        pass
     with log_path.open("ab") as log_f:
         kwargs["stdout"] = log_f
         subprocess.Popen(
@@ -151,22 +162,52 @@ def _spawn_service(log_path: Path) -> None:
         )
 
 
+def _service_log_path() -> Path:
+    return (
+        Path(os.environ.get("TMPDIR", os.environ.get("TEMP", Path.home())))
+        / "k-removemark-mcp-server.log"
+    )
+
+
+def _foreign_port_error() -> RuntimeError:
+    from urllib.parse import urlparse
+
+    port = urlparse(SERVICE_URL).port or (443 if SERVICE_URL.startswith("https") else 80)
+    return RuntimeError(
+        f"el puerto {port} ya está ocupado por otra aplicación que no es k-removemark. "
+        "Cerrá ese programa o elegí otro puerto exportando WATERMARKS_SERVER_PORT "
+        "(y apuntá WATERMARKS_SERVER_URL al nuevo puerto)."
+    )
+
+
 def ensure_service(timeout: float = 20.0) -> dict:
     """Return health when the service is up, starting it if needed.
 
     The service is only spawned once and only when nothing listens on the
-    default port; a manually started service is reused as-is.
+    port; a manually started service is reused as-is. If some other HTTP
+    application owns the port (it answers /health but is not k-removemark),
+    fail fast with an actionable message instead of burning the timeout.
     """
-    for attempt in range(int(timeout / 0.5)):
+    spawned = False
+    deadline = time.monotonic() + timeout
+    while True:
         try:
-            return _http_json("/health", timeout=2.0)
+            health = _http_json("/health", timeout=2.0)
+        except ServiceHTTPStatus:
+            # Alive but not ours: k-removemark always answers /health 200.
+            raise _foreign_port_error() from None
         except RuntimeError:
-            if attempt == 0:
-                _spawn_service(
-                    Path(os.environ.get("TMPDIR", os.environ.get("TEMP", Path.home())))
-                    / "k-removemark-mcp-server.log"
-                )
-            time.sleep(0.5)
+            pass  # nothing listening yet — fall through to spawn/retry
+        else:
+            if isinstance(health, dict) and health.get("ok"):
+                return health
+            raise _foreign_port_error()
+        if not spawned:
+            _spawn_service(_service_log_path())
+            spawned = True
+        if time.monotonic() >= deadline:
+            break
+        time.sleep(0.5)
     raise RuntimeError(f"service at {SERVICE_URL} did not become healthy within {timeout}s")
 
 

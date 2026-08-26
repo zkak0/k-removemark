@@ -110,8 +110,9 @@ if (-not $installed) {
 }
 
 Write-Host ""
-Write-Host "Done. Restart your agent. If the local HTTP service is not running,"
-Write-Host "the skill will tell you how to start it (make serve / docker compose up -d)."
+Write-Host "Listo. Reiniciá tu asistente de IA para que cargue las habilidades."
+Write-Host "Si el servicio HTTP local no está corriendo, la habilidad te indicará"
+Write-Host "cómo iniciarlo (python service\scripts\server.py)."
 
 # Autoconfiguración automática para Claude Desktop (servidor MCP) si está instalado
 $claudeConfigDir = Join-Path $env:APPDATA "Claude"
@@ -131,10 +132,15 @@ if (Test-Path $claudeConfigDir) {
     if ($null -eq $config.mcpServers) {
         $config.mcpServers = @{}
     }
-    $config.mcpServers."k-removemark" = @{
-        command = "python"
-        args = @($mcpPath)
+    $mcpEntry = @{ command = "python"; args = @($mcpPath) }
+    $mcpEnv = @{}
+    if ($env:WATERMARKS_SERVER_PORT) {
+        $mcpEnv["WATERMARKS_SERVER_PORT"] = $env:WATERMARKS_SERVER_PORT
+        $mcpEnv["WATERMARKS_SERVER_URL"] = "http://127.0.0.1:$($env:WATERMARKS_SERVER_PORT)"
     }
+    if ($env:WATERMARKS_SERVER_API_KEY) { $mcpEnv["WATERMARKS_SERVER_API_KEY"] = $env:WATERMARKS_SERVER_API_KEY }
+    if ($mcpEnv.Count -gt 0) { $mcpEntry.env = $mcpEnv }
+    $config.mcpServers."k-removemark" = $mcpEntry
     $configJson = ConvertTo-Json $config -Depth 10
     Set-Content -Path $claudeConfigFile -Value $configJson -Encoding UTF8
     Write-Host "Conector MCP de Claude Desktop configurado con éxito."
@@ -146,20 +152,20 @@ Write-Host "Precalentando servicio HTTP local..."
 try {
     $pyExe = "python"
     try { & python --version 2>$null | Out-Null } catch { $pyExe = "python3" }
-    $envW = @{}
-    if ($env:WATERMARKS_SERVER_API_KEY) { $envW["WATERMARKS_SERVER_API_KEY"] = $env:WATERMARKS_SERVER_API_KEY }
+    $svcPort = if ($env:WATERMARKS_SERVER_PORT) { $env:WATERMARKS_SERVER_PORT } else { "8765" }
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.FileName = $pyExe
     $psi.Arguments = "service\scripts\server.py"
     $psi.WorkingDirectory = $Root
     $psi.UseShellExecute = $false
     $psi.CreateNoWindow = $true
-    foreach ($k in $envW.Keys) { $psi.EnvironmentVariables[$k] = $envW[$k] }
+    if ($env:WATERMARKS_SERVER_PORT) { $psi.EnvironmentVariables["WATERMARKS_SERVER_PORT"] = $env:WATERMARKS_SERVER_PORT }
+    if ($env:WATERMARKS_SERVER_API_KEY) { $psi.EnvironmentVariables["WATERMARKS_SERVER_API_KEY"] = $env:WATERMARKS_SERVER_API_KEY }
     [System.Diagnostics.Process]::Start($psi) | Out-Null
     Start-Sleep -Milliseconds 800
     try {
-        $r = Invoke-WebRequest -Uri "http://127.0.0.1:8765/health" -UseBasicParsing -TimeoutSec 3 -ErrorAction SilentlyContinue
-        if ($r.StatusCode -eq 200) { Write-Host "Servicio HTTP listo en http://127.0.0.1:8765" }
+        $r = Invoke-WebRequest -Uri "http://127.0.0.1:$svcPort/health" -UseBasicParsing -TimeoutSec 3 -ErrorAction SilentlyContinue
+        if ($r.StatusCode -eq 200) { Write-Host "Servicio HTTP listo en http://127.0.0.1:$svcPort" }
     } catch {}
 } catch {
     Write-Host "El servicio se iniciara bajo demanda."

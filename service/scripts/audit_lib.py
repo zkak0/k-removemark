@@ -189,13 +189,13 @@ def print_human_report(
     """Shared plain-text rendering for audit scripts."""
     for key, value in (extra_header or {}).items():
         print(f"{key}: {value}")
-    print(f"Files scanned: {summary['total']}")
-    print(f"By kind: {summary['by_kind']}")
-    print(f"With C2PA: {summary['with_c2pa']}")
-    print(f"With AI metadata: {summary['with_ai_metadata']}")
-    print(f"With suspicious text: {summary['with_suspicious_text']}")
-    print(f"Actionable files: {summary['actionable_files']}")
-    print(f"Findings by confidence: {summary['findings_by_confidence']}")
+    print(f"Archivos analizados: {summary['total']}")
+    print(f"Por tipo: {summary['by_kind']}")
+    print(f"Con C2PA: {summary['with_c2pa']}")
+    print(f"Con metadatos de IA: {summary['with_ai_metadata']}")
+    print(f"Con texto sospechoso: {summary['with_suspicious_text']}")
+    print(f"Archivos accionables: {summary['actionable_files']}")
+    print(f"Hallazgos por confianza: {summary['findings_by_confidence']}")
     for item in files:
         for msg, conf in zip(item.get("findings", []), item.get("confidence", []), strict=False):
             print(f"  [{conf}] {item['path']}: {msg}")

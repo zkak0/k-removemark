@@ -1310,7 +1310,7 @@ def _scrub_ooxml_zip(
         for info, raw in final:
             zout.writestr(info, raw)
     if layer_removed or layer_replaced:
-        actions.append(f"layer A text: removed={layer_removed} replaced={layer_replaced}")
+        actions.append(f"texto capa A: eliminados={layer_removed} reemplazados={layer_replaced}")
     if not actions:
         actions.append(f"no {fmt.upper()} metadata parts removed")
     return out_buf.getvalue(), actions
@@ -1430,7 +1430,7 @@ def clean_odt(data: bytes, *, also_layer_a_text: bool = True) -> tuple[bytes, li
         for info, raw in kept:
             zout.writestr(info, raw)
     if layer_removed or layer_replaced:
-        actions.append(f"layer A text: removed={layer_removed} replaced={layer_replaced}")
+        actions.append(f"texto capa A: eliminados={layer_removed} reemplazados={layer_replaced}")
     if not actions:
         actions.append("no ODT metadata removed")
     return out_buf.getvalue(), actions
@@ -1734,7 +1734,7 @@ def clean_epub(data: bytes, *, also_layer_a_text: bool = True) -> tuple[bytes, l
             zout.writestr(info, raw)
 
     if layer_removed or layer_replaced:
-        actions.append(f"layer A text: removed={layer_removed} replaced={layer_replaced}")
+        actions.append(f"texto capa A: eliminados={layer_removed} reemplazados={layer_replaced}")
     if not actions:
         actions.append("no EPUB metadata removed")
     return out_buf.getvalue(), actions
@@ -2063,7 +2063,7 @@ def clean_container(
             text2, stats = clean_text(text)
             if stats["removed_count"] or stats["replaced_count"]:
                 actions.append(
-                    f"layer A text: removed={stats['removed_count']} replaced={stats['replaced_count']}"
+                    f"texto capa A: eliminados={stats['removed_count']} reemplazados={stats['replaced_count']}"
                 )
                 text = text2
         safe_write_text(dest, text)
@@ -2074,7 +2074,7 @@ def clean_container(
             text2, stats = clean_text(text)
             if stats["removed_count"] or stats["replaced_count"]:
                 actions.append(
-                    f"layer A text: removed={stats['removed_count']} replaced={stats['replaced_count']}"
+                    f"texto capa A: eliminados={stats['removed_count']} reemplazados={stats['replaced_count']}"
                 )
                 text = text2
         safe_write_text(dest, text)
