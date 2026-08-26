@@ -86,8 +86,8 @@ def main() -> int:
         eprint(json.dumps(stats, indent=2, ensure_ascii=False))
     else:
         eprint(
-            f"removed={stats['removed_count']} replaced={stats['replaced_count']} "
-            f"len {stats['input_length']}->{stats['output_length']}"
+            f"eliminados={stats['removed_count']} reemplazados={stats['replaced_count']} "
+            f"longitud {stats['input_length']}->{stats['output_length']}"
         )
     return 0
 

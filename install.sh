@@ -124,16 +124,27 @@ if [ -d "$CLAUDE_DIR" ]; then
   if [ ! -f "$CLAUDE_CFG" ]; then
     printf '{}\n' > "$CLAUDE_CFG"
   fi
-  "$PY_BIN" - "$CLAUDE_CFG" "$PY_BIN" "$MCP_PATH" <<'PYEOF'
+  "$PY_BIN" - "$CLAUDE_CFG" "$PY_BIN" "$MCP_PATH" "${WATERMARKS_SERVER_PORT:-}" "${WATERMARKS_SERVER_API_KEY:-}" <<'PYEOF'
 import json, sys
 cfg_path, py_bin, mcp_path = sys.argv[1], sys.argv[2], sys.argv[3]
+port = sys.argv[4].strip()
+api_key = sys.argv[5].strip()
 try:
     with open(cfg_path, encoding="utf-8") as f:
         cfg = json.load(f)
 except Exception:
     cfg = {}
 cfg.setdefault("mcpServers", {})
-cfg["mcpServers"]["k-removemark"] = {"command": py_bin, "args": [mcp_path]}
+entry = {"command": py_bin, "args": [mcp_path]}
+env = {}
+if port:
+    env["WATERMARKS_SERVER_PORT"] = port
+    env["WATERMARKS_SERVER_URL"] = f"http://127.0.0.1:{port}"
+if api_key:
+    env["WATERMARKS_SERVER_API_KEY"] = api_key
+if env:
+    entry["env"] = env
+cfg["mcpServers"]["k-removemark"] = entry
 with open(cfg_path, "w", encoding="utf-8") as f:
     json.dump(cfg, f, indent=2, ensure_ascii=False)
 print("Conector MCP de Claude Desktop configurado con éxito.")
@@ -145,19 +156,24 @@ echo ""
 echo "Precalentando servicio HTTP local..."
 nohup python3 service/scripts/server.py >/dev/null 2>&1 &
 sleep 2
-if curl -sf http://127.0.0.1:8765/health >/dev/null 2>&1; then
-  echo "Servicio HTTP listo en http://127.0.0.1:8765"
+SVC_PORT="${WATERMARKS_SERVER_PORT:-8765}"
+if curl -sf "http://127.0.0.1:${SVC_PORT}/health" >/dev/null 2>&1; then
+  echo "Servicio HTTP listo en http://127.0.0.1:${SVC_PORT}"
 else
   echo "El servicio se iniciara bajo demanda."
 fi
 
 cat <<'EOF'
 
-Done. Restart your agent. If the local HTTP service is not running, run:
+Listo. Reiniciá tu asistente de IA para que cargue las habilidades.
+Si el servicio HTTP local no está corriendo, iniciarlo es:
   python3 service/scripts/server.py
 
 (opcional) Para proteger el servicio HTTP local de accesos no autorizados,
 podés setear la variable WATERMARKS_SERVER_API_KEY antes de ejecutar install.sh:
   export WATERMARKS_SERVER_API_KEY="tu-clave-secreta"
   ./install.sh
+
+(opcional) Puerto alternativo si el 8765 está ocupado:
+  export WATERMARKS_SERVER_PORT=8899
 EOF
