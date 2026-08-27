@@ -283,8 +283,14 @@ def backup_path(src: Path) -> Path:
     Used by ``--in-place`` flows so the original is never partially lost: the
     original file stays untouched until the cleaned output is atomically
     renamed over it.
+
+    If a ``.bak`` already exists it is preserved untouched and returned as-is.
+    This keeps the first, pristine backup — re-running ``--in-place`` on the
+    same file must not overwrite it with an already-cleaned copy.
     """
     bak = src.with_suffix(src.suffix + ".bak")
+    if bak.is_file():
+        return bak
     try:
         safe_write_bytes(bak, src.read_bytes())
     except OSError as e:

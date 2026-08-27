@@ -138,7 +138,6 @@ if (Test-Path $claudeConfigDir) {
         $mcpEnv["WATERMARKS_SERVER_PORT"] = $env:WATERMARKS_SERVER_PORT
         $mcpEnv["WATERMARKS_SERVER_URL"] = "http://127.0.0.1:$($env:WATERMARKS_SERVER_PORT)"
     }
-    if ($env:WATERMARKS_SERVER_API_KEY) { $mcpEnv["WATERMARKS_SERVER_API_KEY"] = $env:WATERMARKS_SERVER_API_KEY }
     if ($mcpEnv.Count -gt 0) { $mcpEntry.env = $mcpEnv }
     $config.mcpServers."k-removemark" = $mcpEntry
     $configJson = ConvertTo-Json $config -Depth 10
@@ -160,7 +159,6 @@ try {
     $psi.UseShellExecute = $false
     $psi.CreateNoWindow = $true
     if ($env:WATERMARKS_SERVER_PORT) { $psi.EnvironmentVariables["WATERMARKS_SERVER_PORT"] = $env:WATERMARKS_SERVER_PORT }
-    if ($env:WATERMARKS_SERVER_API_KEY) { $psi.EnvironmentVariables["WATERMARKS_SERVER_API_KEY"] = $env:WATERMARKS_SERVER_API_KEY }
     [System.Diagnostics.Process]::Start($psi) | Out-Null
     Start-Sleep -Milliseconds 800
     try {
@@ -170,7 +168,3 @@ try {
 } catch {
     Write-Host "El servicio se iniciara bajo demanda."
 }
-Write-Host ""
-Write-Host "(opcional) Para proteger el servicio HTTP local de accesos no autorizados,"
-Write-Host "podés setear la variable WATERMARKS_SERVER_API_KEY antes de la instalacion:"
-Write-Host "  $env:WATERMARKS_SERVER_API_KEY='tu-clave-secreta'; .\install.ps1"

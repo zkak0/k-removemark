@@ -124,11 +124,10 @@ if [ -d "$CLAUDE_DIR" ]; then
   if [ ! -f "$CLAUDE_CFG" ]; then
     printf '{}\n' > "$CLAUDE_CFG"
   fi
-  "$PY_BIN" - "$CLAUDE_CFG" "$PY_BIN" "$MCP_PATH" "${WATERMARKS_SERVER_PORT:-}" "${WATERMARKS_SERVER_API_KEY:-}" <<'PYEOF'
+  "$PY_BIN" - "$CLAUDE_CFG" "$PY_BIN" "$MCP_PATH" "${WATERMARKS_SERVER_PORT:-}" <<'PYEOF'
 import json, sys
 cfg_path, py_bin, mcp_path = sys.argv[1], sys.argv[2], sys.argv[3]
 port = sys.argv[4].strip()
-api_key = sys.argv[5].strip()
 try:
     with open(cfg_path, encoding="utf-8") as f:
         cfg = json.load(f)
@@ -140,8 +139,6 @@ env = {}
 if port:
     env["WATERMARKS_SERVER_PORT"] = port
     env["WATERMARKS_SERVER_URL"] = f"http://127.0.0.1:{port}"
-if api_key:
-    env["WATERMARKS_SERVER_API_KEY"] = api_key
 if env:
     entry["env"] = env
 cfg["mcpServers"]["k-removemark"] = entry
@@ -168,11 +165,6 @@ cat <<'EOF'
 Listo. Reiniciá tu asistente de IA para que cargue las habilidades.
 Si el servicio HTTP local no está corriendo, iniciarlo es:
   python3 service/scripts/server.py
-
-(opcional) Para proteger el servicio HTTP local de accesos no autorizados,
-podés setear la variable WATERMARKS_SERVER_API_KEY antes de ejecutar install.sh:
-  export WATERMARKS_SERVER_API_KEY="tu-clave-secreta"
-  ./install.sh
 
 (opcional) Puerto alternativo si el 8765 está ocupado:
   export WATERMARKS_SERVER_PORT=8899
