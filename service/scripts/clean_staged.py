@@ -48,12 +48,12 @@ def _clean_one(path: Path) -> str:
         # explained why on stderr, this is a non-fatal skip for the hook.
         return "skipped"
     if not proc.stdout.strip():
-        eprint(f"{path}: {proc.stderr.strip() or 'clean_file.py produced no output'}")
+        eprint(f"{path}: {proc.stderr.strip() or 'clean_file.py no produjo salida'}")
         return "skipped"
     try:
         result = json.loads(proc.stdout)
     except json.JSONDecodeError:
-        eprint(f"{path}: could not parse clean_file.py output")
+        eprint(f"{path}: no se pudo interpretar la salida de clean_file.py")
         return "skipped"
     return "changed" if _changed(result) else "unchanged"
 
@@ -68,7 +68,7 @@ def main() -> int:
     changed_paths: list[Path] = []
     for path in args.paths:
         if not path.is_file():
-            eprint(f"not a file: {path}")
+            eprint(f"no es un archivo: {path}")
             continue
         status = _clean_one(path)
         if status == "changed":
@@ -77,10 +77,10 @@ def main() -> int:
     if not changed_paths:
         return 0
 
-    eprint(f"k-removemark: cleaned {len(changed_paths)} file(s) in place:")
+    eprint(f"k-removemark: limpiados {len(changed_paths)} archivo(s) en su lugar:")
     for path in changed_paths:
         eprint(f"  {path}")
-    eprint("Review the changes and re-stage before committing.")
+    eprint("Revisá los cambios y volvé a hacer stage antes de commitear.")
     return 1
 
 

@@ -124,7 +124,7 @@ def main() -> int:
     args = p.parse_args()
 
     if not args.path.is_file():
-        eprint(f"not a file: {args.path}")
+        eprint(f"no es un archivo: {args.path}")
         return 2
 
     src = args.path
@@ -167,36 +167,36 @@ def main() -> int:
     if args.json:
         print(json.dumps(result, indent=2))
     else:
-        eprint(f"wrote {result['output']} ({result['bytes_in']} -> {result['bytes_out']})")
+        eprint(f"escrito {result['output']} ({result['bytes_in']} -> {result['bytes_out']})")
         for a in result["actions"]:
             eprint(f"  - {a}")
         if result.get("synthid_before") and result["synthid_before"].get("available"):
-            label = "yes" if result["synthid_before"].get("is_watermarked") else "no"
+            label = "sí" if result["synthid_before"].get("is_watermarked") else "no"
             eprint(
-                "SynthID before: "
-                f"confidence {result['synthid_before'].get('confidence', 0.0):.3f} "
-                f"(watermarked: {label})"
+                "SynthID antes: "
+                f"confianza {result['synthid_before'].get('confidence', 0.0):.3f} "
+                f"(con marca: {label})"
             )
         if result.get("synthid_after") and result["synthid_after"].get("available"):
-            label = "yes" if result["synthid_after"].get("is_watermarked") else "no"
+            label = "sí" if result["synthid_after"].get("is_watermarked") else "no"
             eprint(
-                "SynthID after: "
-                f"confidence {result['synthid_after'].get('confidence', 0.0):.3f} "
-                f"(watermarked: {label})"
+                "SynthID después: "
+                f"confianza {result['synthid_after'].get('confidence', 0.0):.3f} "
+                f"(con marca: {label})"
             )
         if pr is not None:
             if pr.get("available"):
                 engine = (
                     "CtrlRegen" if args.remove_pixel == "ctrlregen" else "DiffusionPurification"
                 )
-                eprint(f"{engine}: removed on {pr.get('device', 'unknown device')}")
+                eprint(f"{engine}: eliminado en {pr.get('device', 'dispositivo desconocido')}")
             else:
                 engine = (
                     "CtrlRegen" if args.remove_pixel == "ctrlregen" else "DiffusionPurification"
                 )
-                eprint(f"{engine}: unavailable: {pr.get('error', 'unknown error')}")
+                eprint(f"{engine}: no disponible: {pr.get('error', 'error desconocido')}")
         if residual:
-            eprint("warning: residual C2PA/AI signals may remain")
+            eprint("aviso: pueden quedar señales residuales C2PA/IA")
             for f in result.get("post_findings") or []:
                 eprint(f"  ! {f}")
     return 1 if failed else 0

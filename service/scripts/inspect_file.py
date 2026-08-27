@@ -43,11 +43,11 @@ def main() -> int:
     args = p.parse_args()
 
     if not args.path.is_file():
-        eprint(f"not a file: {args.path}")
+        eprint(f"no es un archivo: {args.path}")
         return 2
 
     if args.path.stat().st_size > MAX_INPUT_BYTES:
-        eprint(f"refusing input larger than {MAX_INPUT_BYTES} bytes: {args.path}")
+        eprint(f"entrada demasiado grande (más de {MAX_INPUT_BYTES} bytes): {args.path}")
         return 2
 
     kind = args.force_type if args.force_type != "auto" else classify(args.path)
@@ -60,13 +60,13 @@ def main() -> int:
             kind = "text"
         else:
             note = (
-                "unrecognized format; pass --as text|image|container|av or --force-text to override"
+                "formato no reconocido; usá --as text|image|container|av o --force-text para forzarlo"
             )
             if args.json:
                 emit_json({"kind": "unknown", "path": file_label, "note": note})
             else:
-                print(f"File: {file_label}")
-                print("Kind: unknown")
+                print(f"Archivo: {file_label}")
+                print("Tipo: desconocido")
                 print(note)
             return 0
 
@@ -80,8 +80,8 @@ def main() -> int:
         if args.json:
             emit_json({"kind": "text", "path": file_label, **report.to_dict()})
         else:
-            print(f"File: {file_label}")
-            print("Kind: text")
+            print(f"Archivo: {file_label}")
+            print("Tipo: texto")
             print(human_report(report))
         return 0 if report.suspicious_total == 0 else 1
 
@@ -90,12 +90,12 @@ def main() -> int:
         if args.json:
             emit_json({"kind": "image", "path": file_label, **report.to_dict()})
         else:
-            print(f"File: {file_label}")
-            print("Kind: image")
-            print(f"Path: {report.path}")
-            print(f"Format: {report.format}")
+            print(f"Archivo: {file_label}")
+            print("Tipo: imagen")
+            print(f"Ruta: {report.path}")
+            print(f"Formato: {report.format}")
             print(f"C2PA: {report.has_c2pa}")
-            print(f"AI metadata: {report.has_ai_metadata}")
+            print(f"Metadatos de IA: {report.has_ai_metadata}")
             for f in report.findings:
                 print(f"  - [{classify_finding_confidence(f)}] {f}")
         return 0 if not (report.has_c2pa or report.has_ai_metadata) else 1
@@ -105,12 +105,12 @@ def main() -> int:
         if args.json:
             emit_json({"kind": "av", "path": file_label, **report.to_dict()})
         else:
-            print(f"File: {file_label}")
-            print("Kind: av")
-            print(f"Path: {report.path}")
-            print(f"Format: {report.format}")
+            print(f"Archivo: {file_label}")
+            print("Tipo: audio/video")
+            print(f"Ruta: {report.path}")
+            print(f"Formato: {report.format}")
             print(f"C2PA: {report.has_c2pa}")
-            print(f"AI metadata: {report.has_ai_metadata}")
+            print(f"Metadatos de IA: {report.has_ai_metadata}")
             for f in report.findings:
                 print(f"  - [{classify_finding_confidence(f)}] {f}")
         return 0 if not (report.has_c2pa or report.has_ai_metadata) else 1
@@ -119,12 +119,12 @@ def main() -> int:
     if args.json:
         emit_json({"kind": "container", "path": file_label, **report.to_dict()})
     else:
-        print(f"File: {file_label}")
-        print("Kind: container")
-        print(f"Path: {report.path}")
-        print(f"Format: {report.format}")
+        print(f"Archivo: {file_label}")
+        print("Tipo: contenedor")
+        print(f"Ruta: {report.path}")
+        print(f"Formato: {report.format}")
         print(f"C2PA: {report.has_c2pa}")
-        print(f"AI metadata: {report.has_ai_metadata}")
+        print(f"Metadatos de IA: {report.has_ai_metadata}")
         for f in report.findings:
             print(f"  - [{classify_finding_confidence(f)}] {f}")
     # layer_a_total counts body-text carriers that clean will strip; the text

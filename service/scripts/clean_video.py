@@ -227,7 +227,7 @@ def main() -> int:
     args = p.parse_args()
 
     if not args.path.is_file():
-        eprint(f"not a file: {args.path}")
+        eprint(f"no es un archivo: {args.path}")
         return 2
     dest = args.output or cleaned_path(args.path)
     try:
@@ -244,26 +244,26 @@ def main() -> int:
     if args.json:
         print(json.dumps(report, indent=2, default=str))
     else:
-        eprint(f"wrote {dest}")
+        eprint(f"escrito {dest}")
         for a in report["actions"]:
             eprint(f"  - {a}")
         scrub = report.get("scrub")
         if scrub is not None:
             if scrub.get("available"):
                 eprint(
-                    f"frame scrub: {scrub.get('frames_scrubbed')} frames via {scrub.get('engine')}"
+                    f"scrub de frames: {scrub.get('frames_scrubbed')} frames vía {scrub.get('engine')}"
                 )
             else:
-                eprint(f"frame scrub: {scrub.get('error', 'unavailable')}")
+                eprint(f"scrub de frames: {scrub.get('error', 'no disponible')}")
         audio_scrub = report.get("audio_scrub")
         if audio_scrub is not None:
             if audio_scrub.get("available"):
                 eprint(
-                    f"audio scrub: phase randomization + notch @ "
+                    f"scrub de audio: aleatorización de fase + notch @ "
                     f"{audio_scrub.get('notch_tone_hz')} Hz"
                 )
             else:
-                eprint(f"audio scrub: {audio_scrub.get('error', 'unavailable')}")
+                eprint(f"scrub de audio: {audio_scrub.get('error', 'no disponible')}")
     return 0
 
 

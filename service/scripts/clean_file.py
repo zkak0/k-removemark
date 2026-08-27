@@ -53,11 +53,11 @@ def main() -> int:
     args = p.parse_args()
 
     if not args.path.is_file():
-        eprint(f"not a file: {args.path}")
+        eprint(f"no es un archivo: {args.path}")
         return 2
 
     if args.path.stat().st_size > MAX_INPUT_BYTES:
-        eprint(f"refusing input larger than {MAX_INPUT_BYTES} bytes: {args.path}")
+        eprint(f"entrada demasiado grande (más de {MAX_INPUT_BYTES} bytes): {args.path}")
         return 2
 
     kind = args.force_type if args.force_type != "auto" else classify(args.path)
@@ -70,7 +70,7 @@ def main() -> int:
         if args.force_type == "text" or args.force_text:
             kind = "text"
         else:
-            eprint(f"refusing to classify {args.path}: unrecognized format")
+            eprint(f"no se pudo clasificar {args.path}: formato no reconocido")
             for line in ROUTER_ADVICE:
                 eprint(line)
             return 2
@@ -142,11 +142,11 @@ def main() -> int:
         if args.json:
             print(json.dumps(result, indent=2))
         else:
-            eprint(f"wrote {result['output']} ({result['bytes_in']} -> {result['bytes_out']})")
+            eprint(f"escrito {result['output']} ({result['bytes_in']} -> {result['bytes_out']})")
             for a in result["actions"]:
                 eprint(f"  - {a}")
             if residual:
-                eprint("warning: residual C2PA/AI signals may remain")
+                eprint("aviso: pueden quedar señales residuales C2PA/IA")
         return 1 if residual else 0
 
     if kind == "av":
@@ -164,11 +164,11 @@ def main() -> int:
         if args.json:
             print(json.dumps(result, indent=2))
         else:
-            eprint(f"wrote {result['output']} ({result['bytes_in']} -> {result['bytes_out']})")
+            eprint(f"escrito {result['output']} ({result['bytes_in']} -> {result['bytes_out']})")
             for a in result["actions"]:
                 eprint(f"  - {a}")
             if residual:
-                eprint("warning: residual C2PA/AI signals may remain")
+                eprint("aviso: pueden quedar señales residuales C2PA/IA")
         return 1 if residual else 0
 
     try:
@@ -182,11 +182,11 @@ def main() -> int:
     if args.json:
         print(json.dumps(result, indent=2, ensure_ascii=False))
     else:
-        eprint(f"wrote {result['output']} format={result['format']}")
+        eprint(f"escrito {result['output']} formato={result['format']}")
         for a in result["actions"]:
             eprint(f"  - {a}")
         if residual:
-            eprint("warning: residual C2PA/AI signals may remain")
+            eprint("aviso: pueden quedar señales residuales C2PA/IA")
             for f in result.get("post_findings") or []:
                 eprint(f"  ! {f}")
     # A degraded (best-effort) PDF copy warns but is not a hard failure.
