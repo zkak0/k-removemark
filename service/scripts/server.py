@@ -976,6 +976,27 @@ class Handler(BaseHTTPRequestHandler):
         self._respond(HTTPStatus.OK, {"ok": True, "results": results})
 
 
+def _healthy_instance(host: str, port: int, timeout: float = 1.5) -> bool:
+    """Return True if a live k-removemark service already answers on *port*.
+
+    Used so a second ``server.py`` (from the MCP spawn or the installer
+    warm-up) reuses the running instance instead of binding a duplicate that
+    would linger as an orphan process.
+    """
+    from urllib.error import URLError
+    from urllib.request import Request, urlopen
+
+    url = f"http://{host}:{port}/health"
+    try:
+        with urlopen(Request(url), timeout=timeout) as resp:  # noqa: S310
+            if resp.status != 200:
+                return False
+            body = json.loads(resp.read().decode("utf-8"))
+            return isinstance(body, dict) and body.get("ok") is True
+    except (URLError, OSError, ValueError, json.JSONDecodeError):
+        return False
+
+
 def main() -> int:
     global API_KEY  # noqa: PLW0603 — CLI overrides env
     p = argparse.ArgumentParser(description=__doc__)
@@ -1000,7 +1021,23 @@ def main() -> int:
     else:
         eprint("warning: no API key set — only bind to loopback or a trusted network")
 
-    server = ThreadingHTTPServer((args.host, args.port), Handler)
+    # Persistent, single-instance service: if a healthy k-removemark already
+    # answers here, reuse it and exit cleanly instead of spawning a duplicate.
+    if args.host in ("127.0.0.1", "localhost", "::1") and _healthy_instance(
+        args.host, args.port
+    ):
+        eprint(
+            f"k-removemark service already running on http://{args.host}:{args.port}; reusing it"
+        )
+        return 0
+
+    try:
+        server = ThreadingHTTPServer((args.host, args.port), Handler)
+    except OSError as e:
+        # Port taken by a non-k-removemark process (or a race with another
+        # instance binding at the same moment). Report clearly and exit.
+        eprint(f"cannot bind {args.host}:{args.port}: {e}")
+        return 1
     eprint(f"k-removemark service {VERSION} on http://{args.host}:{args.port}")
     try:
         server.serve_forever()
