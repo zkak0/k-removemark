@@ -93,7 +93,7 @@ def _load_algorithm(
         from utils.transformers_config import TransformersConfig
         from watermark.auto_watermark import AutoWatermark
     except ImportError as e:
-        raise _Unavailable(f"MarkLLM dependencies missing: {e}") from e
+        raise _Unavailable(f"faltan dependencias de MarkLLM: {e}") from e
 
     # --offline: never contact the HF hub. local_files_only makes transformers
     # fail fast instead of hanging, and HF_HUB_OFFLINE covers the lower-level
@@ -137,13 +137,13 @@ def _threshold_from_config(config: Path) -> float | None:
 def _resolve_config(upstream: Path, alg: str, config: str | None) -> Path:
     path = Path(config).expanduser().resolve() if config else upstream / "config" / f"{alg}.json"
     if not path.is_file():
-        raise _Unavailable(f"MarkLLM config not found: {path}")
+        raise _Unavailable(f"config de MarkLLM no encontrado: {path}")
     try:
         size = path.stat().st_size
     except OSError as e:
-        raise _Unavailable(f"cannot stat MarkLLM config {path}: {e}") from e
+        raise _Unavailable(f"no se puede obtener el estado de config de MarkLLM {path}: {e}") from e
     if size > MAX_CONFIG_BYTES:
-        raise _Unavailable(f"MarkLLM config too large ({size} bytes > {MAX_CONFIG_BYTES}): {path}")
+        raise _Unavailable(f"config de MarkLLM demasiado grande ({size} bytes > {MAX_CONFIG_BYTES}): {path}")
     return path
 
 
@@ -185,7 +185,7 @@ def _detect_payload(wm: Any, text: str, threshold: float | None) -> dict[str, An
 
 def _cmd_detect(args: argparse.Namespace, upstream: Path, alg: str) -> int:
     if args.path != "-" and not Path(args.path).is_file():
-        eprint(f"not a file: {args.path}")
+        eprint(f"no es un archivo: {args.path}")
         return 2
     text = read_text_input(args.path, allow_binary=args.force_text)
 
@@ -200,7 +200,7 @@ def _cmd_detect(args: argparse.Namespace, upstream: Path, alg: str) -> int:
         eprint(str(e))
         return 3
     except Exception as e:
-        eprint(f"detection error: {e}")
+        eprint(f"error de detección: {e}")
         return 1
 
     is_watermarked = det["is_watermarked"]
@@ -221,10 +221,10 @@ def _cmd_detect(args: argparse.Namespace, upstream: Path, alg: str) -> int:
     if args.json:
         emit_json(payload)
     else:
-        label = "watermarked" if is_watermarked else "not watermarked"
-        score_txt = f"{score:.4f}" if score is not None else "n/a"
-        thresh_txt = f"{threshold:.4f}" if threshold is not None else "n/a"
-        print(f"{alg}: {label} (score {score_txt}, threshold {thresh_txt})")
+        label = "con marca de agua" if is_watermarked else "sin marca de agua"
+        score_txt = f"{score:.4f}" if score is not None else "n/d"
+        thresh_txt = f"{threshold:.4f}" if threshold is not None else "n/d"
+        print(f"{alg}: {label} (puntuación {score_txt}, umbral {thresh_txt})")
 
     return 0
 
@@ -249,7 +249,7 @@ def _cmd_watermark(args: argparse.Namespace, upstream: Path, alg: str) -> int:
         eprint(str(e))
         return 3
     except Exception as e:
-        eprint(f"generation error: {e}")
+        eprint(f"error de generación: {e}")
         return 1
 
     wm_out = "-" if args.watermarked_output is None else args.watermarked_output
@@ -273,10 +273,10 @@ def _cmd_watermark(args: argparse.Namespace, upstream: Path, alg: str) -> int:
     if args.json:
         emit_json(payload)
     else:
-        print(f"{alg}: watermarked sample ({payload['watermarked_chars']} chars) -> {wm_out}")
+        print(f"{alg}: muestra con marca de agua ({payload['watermarked_chars']} caracteres) -> {wm_out}")
         if unwatermarked is not None:
             print(
-                f"      unwatermarked sample ({payload['unwatermarked_chars']} chars) -> {args.unwatermarked_output}"
+                f"      muestra sin marca de agua ({payload['unwatermarked_chars']} caracteres) -> {args.unwatermarked_output}"
             )
 
 
@@ -343,7 +343,7 @@ def _cmd_serve(args: argparse.Namespace, upstream: Path, alg: str) -> int:
         eprint(str(e))
         return 3
     except Exception as e:
-        eprint(f"serve load error: {e}")
+        eprint(f"error de carga del servicio: {e}")
         return 1
 
     def respond(payload: dict[str, Any]) -> None:
@@ -511,19 +511,19 @@ def main() -> int:
     args = p.parse_args()
 
     if args.cmd == "detect" and args.path != "-" and not Path(args.path).is_file():
-        eprint(f"not a file: {args.path}")
+        eprint(f"no es un archivo: {args.path}")
         return 2
 
     raw_upstream = args.upstream_dir or os.environ.get("MARKLLM_DIR")
     upstream = resolve_upstream(str(raw_upstream) if raw_upstream else None)
     if upstream is None:
         eprint(
-            "MarkLLM not configured: set MARKLLM_DIR or pass --upstream-dir",
+            "MarkLLM no configurado: establece MARKLLM_DIR o pasa --upstream-dir",
         )
         return 3
 
     if not (upstream / "watermark").is_dir():
-        eprint(f"MarkLLM checkout incomplete (no watermark/ dir): {upstream}")
+        eprint(f"checkout de MarkLLM incompleto (sin dir watermark/): {upstream}")
         return 3
 
     alg = SCHEMES[args.scheme]

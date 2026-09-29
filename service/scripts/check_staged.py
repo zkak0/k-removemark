@@ -30,17 +30,17 @@ def main() -> int:
     p.add_argument(
         "--check-stylometry",
         action="store_true",
-        help="Also evaluate text files for AI statistical & stylometric signals",
+        help="También evalúa archivos de texto por señales estadísticas y de estilometría IA",
     )
     args = p.parse_args()
 
     actionable: list[dict] = []
     for path in args.paths:
         if not path.is_file():
-            eprint(f"not a file: {path}")
+            eprint(f"no es un archivo: {path}")
             return 2
         if path.stat().st_size > MAX_INPUT_BYTES:
-            eprint(f"skipping {path}: larger than {MAX_INPUT_BYTES} bytes")
+            eprint(f"omitiendo {path}: más grande que {MAX_INPUT_BYTES} bytes")
             continue
         item = scan_file(path, check_stylometry=args.check_stylometry)
         if item.get("kind") == "unknown":
@@ -51,18 +51,18 @@ def main() -> int:
     if not actionable:
         return 0
 
-    eprint(f"k-removemark: {len(actionable)} file(s) carry AI/C2PA provenance marks:")
+    eprint(f"k-removemark: {len(actionable)} archivo(s) con marcas de procedencia IA/C2PA:")
     for item in actionable:
         eprint(f"  {item['path']}")
         for finding in item.get("findings", []):
             eprint(f"    - {finding}")
         if item.get("has_c2pa"):
-            eprint("    - C2PA manifest present")
+            eprint("    - manifiesto C2PA presente")
         if item.get("has_ai_metadata"):
-            eprint("    - AI-generator metadata present")
+            eprint("    - metadatos de generador IA presentes")
     eprint(
-        "Run `python3 service/scripts/clean_file.py <path> --in-place` "
-        "(or the k-removemark-clean pre-commit hook) to strip these before committing."
+        "Ejecuta `python3 service/scripts/clean_file.py <ruta> --in-place` "
+        "(o el hook de pre-commit k-removemark-clean) para eliminarlas antes de confirmar."
     )
     return 1
 

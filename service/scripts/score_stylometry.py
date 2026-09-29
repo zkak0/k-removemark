@@ -39,59 +39,59 @@ FULL_WEIGHT_WORDS = 100
 # boilerplate commonly overrepresented in AI-generated text across frontier LLMs.
 AI_PHRASE_PATTERNS: tuple[tuple[str, str, float], ...] = (
     # (regex_pattern, human_label, weight)
-    (r"\bdelve(?:s|d)?\s+into\b", "delve into", 1.2),
-    (r"\ba\s+testament\s+to\b", "a testament to", 1.1),
-    (r"\brich\s+tapestry(?:\s+of)?\b", "rich tapestry", 1.3),
-    (r"\bplays?\s+a\s+(?:pivotal|crucial|vital|key)\s+role\b", "plays a pivotal/crucial role", 1.0),
+    (r"\bdelve(?:s|d)?\s+into\b", "profundizar en", 1.2),
+    (r"\ba\s+testament\s+to\b", "un testimonio de", 1.1),
+    (r"\brich\s+tapestry(?:\s+of)?\b", "rico tapiz", 1.3),
+    (r"\bplays?\s+a\s+(?:pivotal|crucial|vital|key)\s+role\b", "juega un papel fundamental/crucial", 1.0),
     (
         r"\bin\s+(?:today'?s|the)\s+(?:(?:fast-paced|ever-evolving|digital|rapidly\s+changing)\s+)*(?:world|landscape|era|environment)\b",
-        "in today's fast-paced world/landscape",
+        "en el mundo/paisaje actual/dinámico",
         1.4,
     ),
     (
         r"\bit\s+is\s+(?:important|essential|crucial|worth\s+noting)\s+to\s+(?:note|remember|consider|highlight)\b",
-        "it is important/crucial to note",
+        "es importante/crucial señalar",
         0.9,
     ),
     (
         r"\bnot\s+only\b[\w\s,]+\bbut\s+(?:also\s+)?(?:serves\s+to|acts\s+as|highlights)\b",
-        "not only ... but also serves to",
+        "no solo ... sino que también sirve para",
         0.8,
     ),
     (
         r"\bserve(?:s|d)?\s+as\s+a\s+(?:beacon|reminder|catalyst|cornerstone)\b",
-        "serves as a beacon/catalyst/cornerstone",
+        "sirve como un faro/catalizador/piedra angular",
         1.1,
     ),
     (
         r"\bunderscore(?:s|d)?\s+the\s+(?:importance|need|significance)\b",
-        "underscores the importance/need",
+        "subraya la importancia/necesidad",
         0.9,
     ),
     (
         r"\bfoster(?:s|ing|ed)?\s+a\s+(?:sense|culture|deeper\s+understanding)\b",
-        "fosters a sense/culture",
+        "fomenta un sentido/cultura",
         0.9,
     ),
     (
         r"\bseamlessly\s+(?:integrates?|integrated|blends?|combine[sd]?)\b",
-        "seamlessly integrates/blends",
+        "se integra/mezcla sin problemas",
         1.0,
     ),
     (
         r"\bnavigat(?:e|ing|es|ed)\s+the\s+(?:complexities|intricacies|nuances)\b",
-        "navigating the complexities/nuances",
+        "navegando las complejidades/matices",
         1.0,
     ),
-    (r"\bmultifaceted\s+(?:nature|approach|landscape)\b", "multifaceted nature/approach", 1.0),
-    (r"\bharness(?:ing|ed|es)?\s+the\s+power\s+of\b", "harnessing the power of", 1.0),
-    (r"\ba\s+myriad\s+of\b", "a myriad of", 0.8),
-    (r"\bparadigm\s+shift\b", "paradigm shift", 0.9),
-    (r"\bholistic\s+(?:approach|view|perspective)\b", "holistic approach/perspective", 0.9),
-    (r"\bin\s+conclusion\b[,\s]", "in conclusion", 0.8),
-    (r"\bto\s+summarize\b[,\s]", "to summarize", 0.8),
-    (r"\bultimately\b[,\s]", "ultimately,", 0.6),
-    (r"\bfurthermore\b[,\s]", "furthermore,", 0.6),
+    (r"\bmultifaceted\s+(?:nature|approach|landscape)\b", "naturaleza/enfoque multifacético", 1.0),
+    (r"\bharness(?:ing|ed|es)?\s+the\s+power\s+of\b", "aprovechando el poder de", 1.0),
+    (r"\ba\s+myriad\s+of\b", "una miríada de", 0.8),
+    (r"\bparadigm\s+shift\b", "cambio de paradigma", 0.9),
+    (r"\bholistic\s+(?:approach|view|perspective)\b", "enfoque/perspectiva holístico", 0.9),
+    (r"\bin\s+conclusion\b[,\s]", "en conclusión", 0.8),
+    (r"\bto\s+summarize\b[,\s]", "para resumir", 0.8),
+    (r"\bultimately\b[,\s]", "en última instancia", 0.6),
+    (r"\bfurthermore\b[,\s]", "además", 0.6),
     (r"\bmoreover\b[,\s]", "moreover,", 0.6),
     (r"\bas\s+an\s+ai\b", "as an AI", 1.5),
     (r"\bi\s+hope\s+this\s+helps\b", "I hope this helps", 1.2),
@@ -347,9 +347,9 @@ def score_text_stylometry(text: str, path: str = "<text>") -> StylometryReport:
     if word_count < MIN_SAMPLE_WORDS:
         marker_matches = scan_ai_phrases(text)
         for m in marker_matches:
-            findings.append(f"AI phrase marker '{m.phrase}' found ({m.count}x)")
+            findings.append(f"marcador de frase IA '{m.phrase}' encontrado ({m.count}x)")
         notes.append(
-            f"Sample contains {word_count} words; statistical stylometry is uncalibrated below {MIN_SAMPLE_WORDS} words"
+            f"La muestra contiene {word_count} palabras; la estilometría estadística no está calibrada por debajo de {MIN_SAMPLE_WORDS} palabras"
         )
         return StylometryReport(
             path=path,
@@ -412,7 +412,7 @@ def score_text_stylometry(text: str, path: str = "<text>") -> StylometryReport:
     # 4. Composite Scoring & Small-Sample Dampening
     if burstiness_score is None:
         notes.append(
-            "Sentence burstiness unavailable (fewer than 2 parsed sentences — e.g. body wrapped in a code fence); composite renormalized over AI-phrase density and lexical diversity"
+            "Explosividad de frases no disponible (menos de 2 frases analizadas — p. ej. cuerpo envuelto en bloque de código); el compuesto se renormaliza sobre la densidad de frases IA y la diversidad léxica"
         )
         raw_composite = ((ngram_score * 0.45) + (diversity_score * 0.10)) / 0.55
     else:
@@ -424,7 +424,7 @@ def score_text_stylometry(text: str, path: str = "<text>") -> StylometryReport:
             (word_count - MIN_SAMPLE_WORDS) / (FULL_WEIGHT_WORDS - MIN_SAMPLE_WORDS)
         )
         notes.append(
-            f"Sample word count ({word_count}) is in calibration range ({MIN_SAMPLE_WORDS}-{FULL_WEIGHT_WORDS}); score dampened by factor {dampener:.2f}"
+            f"El recuento de palabras de la muestra ({word_count}) está en el rango de calibración ({MIN_SAMPLE_WORDS}-{FULL_WEIGHT_WORDS}); la puntuación se atenúa por factor {dampener:.2f}"
         )
     else:
         dampener = 1.0
@@ -434,13 +434,13 @@ def score_text_stylometry(text: str, path: str = "<text>") -> StylometryReport:
     # 5. Classify Findings & Confidence Tiers
     if marker_matches:
         for m in marker_matches:
-            findings.append(f"AI cadence phrase '{m.phrase}' ({m.count}x)")
+            findings.append(f"frase de cadencia IA '{m.phrase}' ({m.count}x)")
 
     if cv is not None and cv < 0.35 and sentence_count >= 3:
-        findings.append(f"Unnaturally uniform sentence cadence (CV={cv:.2f} < 0.35)")
+        findings.append(f"Cadencia de frases anormalmente uniforme (CV={cv:.2f} < 0.35)")
 
     if ngram_density >= 1.0:
-        findings.append(f"Elevated AI formulaic transition density ({ngram_density:.2f}/100w)")
+        findings.append(f"Densidad elevada de transiciones formulísticas IA ({ngram_density:.2f}/100p)")
 
     if final_score >= 0.75:
         confidence = "HIGH"
@@ -469,35 +469,35 @@ def score_text_stylometry(text: str, path: str = "<text>") -> StylometryReport:
 
 def print_human_stylometry_report(report: StylometryReport, explain: bool = False) -> None:
     """Print clean human-readable output to stdout."""
-    print(f"=== Stylometric AI-Text Report: {report.path} ===")
-    print(f"Status:             {report.status}")
-    print(f"Confidence Level:   {report.confidence_level}")
-    print(f"AI Probability:     {report.score * 100:.1f}% (score: {report.score:.3f})")
-    print(f"Word Count:         {report.word_count}")
-    print(f"Sentence Count:     {report.sentence_count}")
+    print(f"=== Informe de IA por estilometría: {report.path} ===")
+    print(f"Estado:             {report.status}")
+    print(f"Nivel de confianza: {report.confidence_level}")
+    print(f"Probabilidad IA:    {report.score * 100:.1f}% (puntuación: {report.score:.3f})")
+    print(f"Número de palabras: {report.word_count}")
+    print(f"Número de frases:   {report.sentence_count}")
     cv_display = (
         f"{report.burstiness_cv:.3f}"
         if report.burstiness_cv is not None
-        else "n/a (fewer than 2 sentences)"
+        else "n/d (menos de 2 frases)"
     )
-    print(f"Sentence CV:        {cv_display}")
-    print(f"Lexical Diversity:  {report.lexical_diversity:.3f} (MATTR)")
-    print(f"AI Marker Density:  {report.ai_ngram_density:.3f} / 100 words")
+    print(f"CV de frases:       {cv_display}")
+    print(f"Diversidad léxica:  {report.lexical_diversity:.3f} (MATTR)")
+    print(f"Densidad marcador IA: {report.ai_ngram_density:.3f} / 100 palabras")
 
     if report.findings:
-        print("\nFindings:")
+        print("\nHallazgos:")
         for f in report.findings:
             print(f"  - {f}")
 
     if explain and report.matched_markers:
-        print("\nMatched Phrases Detail:")
+        print("\nDetalle de frases coincidentes:")
         for m in report.matched_markers:
-            print(f"  * {m['phrase']} (occurrences: {m['count']}, weight: {m['weight']})")
+            print(f"  * {m['phrase']} (apariciones: {m['count']}, peso: {m['weight']})")
             if m.get("samples"):
-                print(f'    sample: "{m["samples"][0]}"')
+                print(f'    ejemplo: "{m["samples"][0]}"')
 
     if report.notes:
-        print("\nNotes:")
+        print("\nNotas:")
         for n in report.notes:
             print(f"  * {n}")
 

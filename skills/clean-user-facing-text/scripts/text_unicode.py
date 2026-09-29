@@ -451,8 +451,69 @@ def _decide(
 def _char_label(ch: str) -> str:
     cp = ord(ch)
     name = unicodedata.name(ch, "UNKNOWN")
+    # Mapeo de nombres Unicode comunes de marcas de agua a español
+    # (los nombres estándar Unicode vienen en inglés; traducimos los comunes)
+    name_map = {
+        "ZERO WIDTH SPACE": "ESPACIO DE ANCHO CERO",
+        "ZERO WIDTH NON-JOINER": "NO UNIDOR DE ANCHO CERO",
+        "ZERO WIDTH JOINER": "UNIDOR DE ANCHO CERO",
+        "SOFT HYPHEN": "GUION BLANDO",
+        "LEFT-TO-RIGHT MARK": "MARCA IZQUIERDA A DERECHA",
+        "RIGHT-TO-LEFT MARK": "MARCA DERECHA A IZQUIERDA",
+        "LEFT-TO-RIGHT EMBEDDING": "INSERCIÓN IZQUIERDA A DERECHA",
+        "RIGHT-TO-LEFT EMBEDDING": "INSERCIÓN DERECHA A IZQUIERDA",
+        "POP DIRECTIONAL FORMATTING": "FIN FORMATO DIRECCIONAL",
+        "LEFT-TO-RIGHT OVERRIDE": "ANULACIÓN IZQUIERDA A DERECHA",
+        "RIGHT-TO-LEFT OVERRIDE": "ANULACIÓN DERECHA A IZQUIERDA",
+        "BYTE ORDER MARK": "MARCA DE ORDEN DE BYTES",
+        "LINE SEPARATOR": "SEPARADOR DE LÍNEA",
+        "PARAGRAPH SEPARATOR": "SEPARADOR DE PÁRRAFO",
+        "NARROW NO-BREAK SPACE": "ESPACIO SIN SALTO ESTRECHO",
+        "MEDIUM MATHEMATICAL SPACE": "ESPACIO MATEMÁTICO MEDIO",
+        "IDEOGRAPHIC SPACE": "ESPACIO IDEOGRÁFICO",
+        "FIGURE SPACE": "ESPACIO DE CIFRA",
+        "PUNCTUATION SPACE": "ESPACIO DE PUNTUACIÓN",
+        "THIN SPACE": "ESPACIO DELGADO",
+        "HAIR SPACE": "ESPACIO DE PELO",
+        "ZERO WIDTH NO-BREAK SPACE": "ESPACIO SIN SALTO DE ANCHO CERO",
+        "VARIATION SELECTOR-1": "SELECTOR DE VARIACIÓN 1",
+        "VARIATION SELECTOR-2": "SELECTOR DE VARIACIÓN 2",
+        "VARIATION SELECTOR-3": "SELECTOR DE VARIACIÓN 3",
+        "VARIATION SELECTOR-4": "SELECTOR DE VARIACIÓN 4",
+        "VARIATION SELECTOR-5": "SELECTOR DE VARIACIÓN 5",
+        "VARIATION SELECTOR-6": "SELECTOR DE VARIACIÓN 6",
+        "VARIATION SELECTOR-7": "SELECTOR DE VARIACIÓN 7",
+        "VARIATION SELECTOR-8": "SELECTOR DE VARIACIÓN 8",
+        "VARIATION SELECTOR-9": "SELECTOR DE VARIACIÓN 9",
+        "VARIATION SELECTOR-10": "SELECTOR DE VARIACIÓN 10",
+        "VARIATION SELECTOR-11": "SELECTOR DE VARIACIÓN 11",
+        "VARIATION SELECTOR-12": "SELECTOR DE VARIACIÓN 12",
+        "VARIATION SELECTOR-13": "SELECTOR DE VARIACIÓN 13",
+        "VARIATION SELECTOR-14": "SELECTOR DE VARIACIÓN 14",
+        "VARIATION SELECTOR-15": "SELECTOR DE VARIACIÓN 15",
+        "VARIATION SELECTOR-16": "SELECTOR DE VARIACIÓN 16",
+        "MONGOLIAN FREE VARIATION SELECTOR ONE": "SELECTOR DE VARIACIÓN LIBRE MONGOL UNO",
+        "MONGOLIAN FREE VARIATION SELECTOR TWO": "SELECTOR DE VARIACIÓN LIBRE MONGOL DOS",
+        "MONGOLIAN FREE VARIATION SELECTOR THREE": "SELECTOR DE VARIACIÓN LIBRE MONGOL TRES",
+        "MONGOLIAN VOWEL SEPARATOR": "SEPARADOR DE VOCAL MONGOL",
+        "KHMER VOWEL INHERENT AQ": "VOCAL INHERENTE JEMER AQ",
+        "KHMER VOWEL INHERENT AA": "VOCAL INHERENTE JEMER AA",
+        "MONGOLIAN NIRUGU": "NIRUGU MONGOL",
+        "MONGOLIAN FREE VARIATION SELECTOR FOUR": "SELECTOR DE VARIACIÓN LIBRE MONGOL CUATRO",
+        "TAG": "ETIQUETA",
+        "CANCEL TAG": "CANCELAR ETIQUETA",
+        "LANGUAGE TAG": "ETIQUETA DE IDIOMA",
+        "COMBINING GRAPHEME JOINER": "UNIDOR DE GRAFEMA COMBINANTE",
+        "WORD JOINER": "UNIDOR DE PALABRA",
+        "INVISIBLE SEPARATOR": "SEPARADOR INVISIBLE",
+        "INVISIBLE TIMES": "MULTIPLICACIÓN INVISIBLE",
+        "INVISIBLE PLUS": "SUMA INVISIBLE",
+        "FUNCTION APPLICATION": "APLICACIÓN DE FUNCIÓN",
+        "BIBLICAL HEBREW POINT HOLAM": "PUNTO HOLAM HEBREO BÍBLICO",
+    }
+    name_es = name_map.get(name, name)
     cat = unicodedata.category(ch)
-    return f"U+{cp:04X} {name} ({cat})"
+    return f"U+{cp:04X} {name_es} ({cat})"
 
 
 def _hit_confidence(kind: str) -> str:
@@ -548,15 +609,15 @@ def inspect_text(
         total += len(offsets)
 
     notes = [
-        "Layer A only: invisible/format Unicode and space homoglyphs (edit-based carriers).",
-        "Statistical (token-sampling) watermarks are not detectable here; use Layer B rewrite.",
-        "Inspect kinds: strip, bidi, tag_chars, variation_selector, zwj_family, private_use, space, confusable, other_cf.",
-        "Load-bearing invisibles are preserved by default during cleaning: emoji glue, CJK/Mongolian variation selectors, script joiners, complete flag tag sequences, same-script fillers/selectors (Mongolian FVS, Khmer inherent vowels, Hangul jamo fillers), RTL directional marks/paired embeddings, and orthographic Arabic/Syriac Cf marks. Inspection still reports bidi controls. Use explicit strip flags only after review.",
+        "Solo capa A: Unicode/formato invisibles y homoglifos de espacio (portadores basados en edición).",
+        "Marcas de agua estadísticas (muestreo de tokens) no detectables aquí; use la reescritura de capa B.",
+        "Tipos de inspección: strip, bidi, tag_chars, variation_selector, zwj_family, private_use, space, confusable, other_cf.",
+        "Invisibles portadores de carga se preservan por defecto al limpiar: pegamento de emojis, selectores de variación CJK/mongoles, uniones de escritura, secuencias completas de etiquetas de bandera, rellenos/selector de misma escritura (FVS mongol, vocales inherentes jemeres, rellenos jamo hangul), marcas direccionales RTL/embebidos pareados, y marcas Cf árabes/siríacas ortográficas. La inspección sigue reportando controles bidi. Use indicadores de strip explícitos solo tras revisión.",
     ]
     if not hits:
         notes.append(
-            "No deterministic Layer A (invisible Unicode/format) carriers detected; "
-            "statistical and pixel-domain marks are out of scope here."
+            "No se detectaron portadores deterministas de capa A (Unicode/formato invisibles); "
+            "marcas estadísticas y de dominio de píxeles están fuera de alcance aquí."
         )
     return TextInspectReport(length=len(text), suspicious_total=total, hits=hits, notes=notes)
 
@@ -637,15 +698,15 @@ def clean_text(
 
 def human_report(report: TextInspectReport) -> str:
     lines = [
-        f"Length: {report.length} chars",
-        f"Suspicious: {report.suspicious_total}",
+        f"Longitud: {report.length} caracteres",
+        f"Sospechoso: {report.suspicious_total}",
     ]
     if report.hits:
-        lines.append("Hits:")
+        lines.append("Hallazgos:")
         for h in report.hits:
             lines.append(
                 f"  [{h.kind}/{_hit_confidence(h.kind)}] {h.label} x{h.count} @ {h.samples[:5]}"
             )
     for n in report.notes:
-        lines.append(f"Note: {n}")
+        lines.append(f"Nota: {n}")
     return "\n".join(lines)

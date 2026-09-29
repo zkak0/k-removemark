@@ -130,8 +130,8 @@ class HeuristicDetector:
             },
             "findings": sty.findings,
             "note": (
-                "best-effort statistical signal, NOT verified; may be clean "
-                "human prose. Do not use as evidence of provenance."
+                "señal estadística de mejor esfuerzo, NO verificada; puede ser "
+                "prosa humana limpia. No usar como evidencia de procedencia."
             ),
         }
 

@@ -207,9 +207,9 @@ def format_sarif(report: dict[str, Any]) -> dict[str, Any]:
         {
             "id": "AI-WATERMARK-C2PA",
             "name": "C2PAManifestDetected",
-            "shortDescription": {"text": "C2PA / Content Credentials provenance manifest detected"},
+            "shortDescription": {"text": "Manifiesto de procedencia C2PA / Content Credentials detectado"},
             "fullDescription": {
-                "text": "A C2PA provenance manifest or JUMBF metadata box was detected in the asset."
+                "text": "Se detectó un manifiesto de procedencia C2PA o una caja de metadatos JUMBF en el activo."
             },
             "defaultConfiguration": {"level": "error"},
             "properties": {"tags": ["provenance", "c2pa", "watermark"]},
@@ -217,9 +217,9 @@ def format_sarif(report: dict[str, Any]) -> dict[str, Any]:
         {
             "id": "AI-WATERMARK-METADATA",
             "name": "AIMetadataMarkerDetected",
-            "shortDescription": {"text": "AI generation metadata or provenance markers detected"},
+            "shortDescription": {"text": "Metadatos de generación de IA o marcadores de procedencia detectados"},
             "fullDescription": {
-                "text": "AI metadata markers or container generator tags were detected in the file."
+                "text": "Se detectaron marcadores de metadatos de IA o etiquetas de generador de contenedores en el archivo."
             },
             "defaultConfiguration": {"level": "warning"},
             "properties": {"tags": ["provenance", "ai-generated"]},
@@ -227,11 +227,9 @@ def format_sarif(report: dict[str, Any]) -> dict[str, Any]:
         {
             "id": "AI-WATERMARK-UNICODE-LAYER-A",
             "name": "InvisibleUnicodeWatermarkCarrier",
-            "shortDescription": {
-                "text": "Suspicious invisible Unicode or zero-width watermark carriers detected"
-            },
+            "shortDescription": {"text": "Portadores de marca de agua Unicode invisibles o de ancho cero detectados"},
             "fullDescription": {
-                "text": "Invisible Unicode formatting characters or homoglyph spaces used as watermark carriers were found in the text."
+                "text": "Se encontraron caracteres de formato Unicode invisibles o espacios homóglifos utilizados como portadores de marcas de agua en el texto."
             },
             "defaultConfiguration": {"level": "warning"},
             "properties": {"tags": ["watermark", "unicode", "layer-a"]},
@@ -239,11 +237,9 @@ def format_sarif(report: dict[str, Any]) -> dict[str, Any]:
         {
             "id": "AI-STYLES-HIGH-PROBABILITY",
             "name": "HighProbabilityAITextCadence",
-            "shortDescription": {
-                "text": "High-probability statistical & stylometric AI text cadence detected"
-            },
+            "shortDescription": {"text": "Cadencia de texto IA estadística y estilométrica de alta probabilidad detectada"},
             "fullDescription": {
-                "text": "Stylometric analysis flagged the text as highly likely to be machine-generated."
+                "text": "El análisis estilométrico marcó el texto como altamente probable de ser generado por máquina."
             },
             "defaultConfiguration": {"level": "note"},
             "properties": {"tags": ["stylometry", "ai-text"]},

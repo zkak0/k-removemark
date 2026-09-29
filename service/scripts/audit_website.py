@@ -73,7 +73,7 @@ def parse_sitemap(data: bytes) -> tuple[str, list[str]]:
     # rejected outright before parsing. If the policy ever changes, swap in
     # defusedxml.ElementTree with the same DTD rejection as defense in depth.
     if b"<!DOCTYPE" in data or b"<!ENTITY" in data:
-        raise ValueError("sitemap declares a DTD / entities; refusing to parse")
+        raise ValueError("el sitemap declara DTD / entidades; se rechaza el análisis")
 
     root = ET.fromstring(data)  # noqa: S314 - DTD/entity declarations rejected above
     kind = _local(root.tag)
@@ -146,14 +146,14 @@ def _url_origin(url: str) -> UrlOrigin:
     scheme = parsed.scheme.lower()
 
     if scheme not in ("http", "https"):
-        raise ValueError(f"unsupported URL scheme: {scheme or '(missing)'}")
+        raise ValueError(f"esquema de URL no soportado: {scheme or '(falta)'}")
 
     if parsed.username is not None or parsed.password is not None:
-        raise ValueError("credentials in URLs are not allowed")
+        raise ValueError("no se permiten credenciales en las URLs")
 
     host = parsed.hostname
     if not host:
-        raise ValueError("URL has no hostname")
+        raise ValueError("la URL no tiene hostname")
 
     try:
         port = parsed.port
@@ -208,7 +208,7 @@ def _resolve_public_addresses(origin: UrlOrigin) -> tuple[str, ...]:
             address = mapped
 
         if not address.is_global:
-            raise ValueError(f"refusing non-public address for {host}: {address}")
+            raise ValueError(f"se rechaza dirección no pública para {host}: {address}")
 
         canonical = str(address)
         if canonical not in addresses:
@@ -229,7 +229,7 @@ def _validated_target(
     origin = _url_origin(url)
 
     if expected_origin is not None and not _origin_allowed(origin, expected_origin):
-        raise ValueError(f"cross-origin URL is not allowed: {origin[0]}://{origin[1]}:{origin[2]}")
+        raise ValueError(f"no se permite URL de origen cruzado: {origin[0]}://{origin[1]}:{origin[2]}")
 
     return origin, _resolve_public_addresses(origin)
 
@@ -338,7 +338,7 @@ def fetch(
                 location = response.getheader("Location")
                 if location:
                     if redirect_count >= MAX_REDIRECTS:
-                        raise ValueError(f"too many redirects (>{MAX_REDIRECTS})")
+                        raise ValueError(f"demasiadas redirecciones (>{MAX_REDIRECTS})")
                     current_url = urllib.parse.urljoin(current_url, location)
                     continue
 
@@ -362,7 +362,7 @@ def fetch(
                 response.close()
             conn.close()
 
-    raise ValueError(f"too many redirects (>{MAX_REDIRECTS})")
+    raise ValueError(f"demasiadas redirecciones (>{MAX_REDIRECTS})")
 
 
 def inspect_remote(url: str, data: bytes, content_type: str | None = None) -> dict:
@@ -414,7 +414,7 @@ def discover_sitemap(base_url: str, timeout: int) -> str | None:
                 candidate_origin = _url_origin(candidate)
 
                 if not _origin_allowed(candidate_origin, origin):
-                    raise ValueError(f"cross-origin sitemap is not allowed: {candidate}")
+                    raise ValueError(f"no se permite sitemap de origen cruzado: {candidate}")
 
                 return candidate
 
@@ -487,7 +487,7 @@ def main() -> int:
     args = p.parse_args()
 
     if not args.sitemap and not args.base:
-        eprint("provide --sitemap URL or --base URL")
+        eprint("proporciona --sitemap URL o --base URL")
         return 2
 
     sitemap_url = args.sitemap
@@ -495,19 +495,19 @@ def main() -> int:
         try:
             sitemap_url = discover_sitemap(args.base, args.timeout)
         except ValueError as e:
-            eprint(f"invalid base URL: {e}")
+            eprint(f"URL base no válida: {e}")
             return 2
         if not sitemap_url:
-            eprint(f"no sitemap found for {args.base}")
+            eprint(f"no se encontró sitemap para {args.base}")
             return 2
 
     try:
         urls = collect_urls(sitemap_url, args.timeout, args.max_pages)
     except Exception as e:
-        eprint(f"could not collect URLs from {sitemap_url}: {e}")
+        eprint(f"no se pudieron recopilar URLs de {sitemap_url}: {e}")
         return 2
     if not urls:
-        eprint("no URLs collected from sitemap")
+        eprint("no se recopilaron URLs del sitemap")
         return 2
 
     files = []
@@ -521,7 +521,7 @@ def main() -> int:
         try:
             files.append(inspect_remote(url, data, content_type))
         except Exception as e:
-            failures.append({"url": url, "error": f"inspect failed: {e}"})
+            failures.append({"url": url, "error": f"inspección fallida: {e}"})
 
     summary = aggregate(files)
     report = {
@@ -542,9 +542,9 @@ def main() -> int:
             summary,
             extra_header={
                 "Sitemap": sitemap_url,
-                "URLs collected": str(len(urls)),
-                "URLs scanned": str(len(files)),
-                "URLs failed": str(len(failures)),
+                "URLs recopiladas": str(len(urls)),
+                "URLs escaneadas": str(len(files)),
+                "URLs fallidas": str(len(failures)),
             },
         )
         for failure in failures:

@@ -49,7 +49,7 @@ def walk_files(root: Path, skip_dirs: set[str]):
 def _scan_worker(path: Path, check_stylometry: bool) -> tuple[dict | None, dict | None]:
     try:
         if path.stat().st_size > MAX_INPUT_BYTES:
-            return None, {"path": str(path), "reason": "too large"}
+            return None, {"path": str(path), "reason": "demasiado grande"}
         return scan_file(path, check_stylometry=check_stylometry), None
     except Exception as e:  # keep the audit going on one bad file
         return None, {"path": str(path), "reason": str(e)}
@@ -93,7 +93,7 @@ def main() -> int:
 
     root = args.path
     if not root.is_dir():
-        eprint(f"not a directory: {root}")
+        eprint(f"no es un directorio: {root}")
         return 2
 
     skip_dirs = set(DEFAULT_SKIP_DIRS)
@@ -151,8 +151,8 @@ def main() -> int:
             files,
             summary,
             extra_header={
-                "Root": report["root"],
-                "Files skipped": str(len(skipped)),
+                "Raíz": report["root"],
+                "Archivos omitidos": str(len(skipped)),
             },
         )
 

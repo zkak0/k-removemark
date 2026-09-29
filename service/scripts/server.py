@@ -1015,11 +1015,11 @@ def main() -> int:
     API_KEY = args.api_key
 
     if args.host not in ("127.0.0.1", "localhost", "::1"):
-        eprint(f"warning: binding {args.host} — intended for a trusted network only")
+        eprint(f"advertencia: enlazando en {args.host} — solo para red de confianza")
     if API_KEY:
-        eprint("API key required for requests")
+        eprint("clave API requerida para peticiones")
     else:
-        eprint("warning: no API key set — only bind to loopback or a trusted network")
+        eprint("advertencia: sin clave API — solo enlaza en loopback o red de confianza")
 
     # Persistent, single-instance service: if a healthy k-removemark already
     # answers here, reuse it and exit cleanly instead of spawning a duplicate.
@@ -1027,7 +1027,7 @@ def main() -> int:
         args.host, args.port
     ):
         eprint(
-            f"k-removemark service already running on http://{args.host}:{args.port}; reusing it"
+            f"el servicio k-removemark ya está corriendo en http://{args.host}:{args.port}; reutilizándolo"
         )
         return 0
 
@@ -1036,13 +1036,13 @@ def main() -> int:
     except OSError as e:
         # Port taken by a non-k-removemark process (or a race with another
         # instance binding at the same moment). Report clearly and exit.
-        eprint(f"cannot bind {args.host}:{args.port}: {e}")
+        eprint(f"no se puede enlazar {args.host}:{args.port}: {e}")
         return 1
-    eprint(f"k-removemark service {VERSION} on http://{args.host}:{args.port}")
+    eprint(f"servicio k-removemark {VERSION} en http://{args.host}:{args.port}")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        eprint("shutting down")
+        eprint("apagando")
         server.shutdown()
     return 0
 

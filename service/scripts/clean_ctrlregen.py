@@ -106,27 +106,27 @@ def main() -> int:
     args = p.parse_args()
 
     if not args.path.is_file():
-        print(f"not a file: {args.path}", file=sys.stderr)
+        print(f"no es un archivo: {args.path}", file=sys.stderr)
         return 2
     if not 0 < args.strength <= 1:
-        print(f"strength must be in (0, 1]: {args.strength}", file=sys.stderr)
+        print(f"la fuerza debe estar en (0, 1]: {args.strength}", file=sys.stderr)
         return 2
     if args.steps < 1:
-        print(f"steps must be >= 1: {args.steps}", file=sys.stderr)
+        print(f"los pasos deben ser >= 1: {args.steps}", file=sys.stderr)
         return 2
 
     raw_upstream = args.upstream_dir or os.environ.get("NOAI_WATERMARK_DIR")
     upstream = resolve_upstream(str(raw_upstream) if raw_upstream else None)
     if upstream is None:
         print(
-            "CtrlRegen not configured: set NOAI_WATERMARK_DIR or pass --upstream-dir",
+            "CtrlRegen no configurado: establece NOAI_WATERMARK_DIR o pasa --upstream-dir",
             file=sys.stderr,
         )
         return 3
 
     src_dir = upstream / "src"
     if not src_dir.is_dir():
-        print(f"upstream src dir not found: {src_dir}", file=sys.stderr)
+        print(f"no se encontró el dir src de upstream: {src_dir}", file=sys.stderr)
         return 3
 
     sys.path.insert(0, str(src_dir))
@@ -134,13 +134,13 @@ def main() -> int:
         from ctrlregen.engine import CtrlRegenEngine, is_ctrlregen_available
         from PIL import Image
     except ImportError as e:
-        print(f"CtrlRegen dependencies missing: {e}", file=sys.stderr)
-        print("run setup_ctrlregen.sh first", file=sys.stderr)
+        print(f"faltan dependencias de CtrlRegen: {e}", file=sys.stderr)
+        print("ejecuta setup_ctrlregen.sh primero", file=sys.stderr)
         return 3
 
     if not is_ctrlregen_available():
         print(
-            "CtrlRegen dependencies not installed; run setup_ctrlregen.sh first",
+            "dependencias de CtrlRegen no instaladas; ejecuta setup_ctrlregen.sh primero",
             file=sys.stderr,
         )
         return 3
@@ -149,7 +149,7 @@ def main() -> int:
         image = Image.open(args.path).convert("RGB")
         image.load()
     except Exception as e:
-        print(f"could not load image: {e}", file=sys.stderr)
+        print(f"no se pudo cargar la imagen: {e}", file=sys.stderr)
         return 2
 
     device = resolve_device(args.device)
@@ -172,14 +172,14 @@ def main() -> int:
             seed=args.seed,
         )
     except Exception as e:
-        print(f"CtrlRegen error: {e}", file=sys.stderr)
+        print(f"error de CtrlRegen: {e}", file=sys.stderr)
         return 1
 
     try:
         data = save_image_bytes(result, output)
         safe_write_bytes(output, data)
     except (OSError, ValueError) as e:
-        print(f"cannot write output: {e}", file=sys.stderr)
+        print(f"no se pudo escribir la salida: {e}", file=sys.stderr)
         return 1
 
     payload = {
@@ -200,9 +200,9 @@ def main() -> int:
         sys.stdout.write("\n")
     else:
         print(
-            f"CtrlRegen removed: {args.path} -> {output} "
+            f"CtrlRegen eliminó: {args.path} -> {output} "
             f"({payload['input_size']} -> {payload['output_size']}, "
-            f"strength {args.strength}, device {device})"
+            f"fuerza {args.strength}, dispositivo {device})"
         )
 
     return 0
