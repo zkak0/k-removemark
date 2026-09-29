@@ -17,8 +17,8 @@ Reinicia `gemini`. Pide p. ej.:
 - "quita las marcas de agua de este texto"
 - "limpia la metadata AI de esta imagen (C2PA/EXIF)"
 
-El skill usa el servicio local HTTP (`make serve`, puerto 8765) y detecta sus
-capacidades vía `/capabilities`. Nunca afirma verificación de vendor sin clave.
+El skill usa el servicio local HTTP (`python service/scripts/server.py`, puerto 8765) y
+detecta sus capacidades vía `/capabilities`. Nunca afirma verificación de vendor sin clave.
 
 ## Limitaciones honestas
 

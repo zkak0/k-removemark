@@ -26,7 +26,7 @@ npx skills add <owner>/k-removemark        # instala todos los skills del repo
 
 Todos los instaladores solo copian archivos: sin red, sin node, sin python.
 El servicio HTTP local (`service/scripts/server.py`) se arranca aparte con
-`make serve` o `docker compose up -d`; los skills lo detectan vía `/capabilities`.
+`python service/scripts/server.py`; los skills lo detectan vía `/capabilities`.
 
 ## Regla de oro
 

@@ -18,4 +18,4 @@ a `~/.gemini/antigravity/skills/` y el `plugin.json` de esta carpeta a
 
 Reinicia Antigravity y pide "quita las marcas de agua de este texto/imagen" o
 "limpia la metadata AI de este archivo". El skill usa el servicio local
-(`make serve`) y reporta honestamente qué fue verificado y qué es best-effort.
+(`python service/scripts/server.py`) y reporta honestamente qué fue verificado y qué es best-effort.
