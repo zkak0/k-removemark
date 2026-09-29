@@ -150,6 +150,13 @@ fi
 
 # Precalentar el servicio HTTP para que la primera llamada sea instantánea
 echo ""
+if python3 service/scripts/selfcheck.py; then
+  echo "Integridad del repo correcta."
+else
+  echo "Aviso: la verificacion de integridad detecto problemas (ver arriba);"
+  echo "la instalacion continua, pero conviene revisarlos antes de publicar."
+fi
+echo ""
 echo "Precalentando servicio HTTP local..."
 nohup python3 service/scripts/server.py >/dev/null 2>&1 &
 sleep 2

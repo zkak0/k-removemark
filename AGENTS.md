@@ -30,3 +30,4 @@ k-removemark elimina marcas de procedencia de IA (Unicode invisible, marcas esta
 - Inspecciona antes de limpiar (`inspect_file.py` o `/inspect`). No adivines.
 - Reporta con honestidad: separa lo verificado (conteos, metadatos eliminados) de lo mejor esfuerzo (reescritura estadística). Nunca afirmes que un detector del fabricante fue derrotado.
 - Opera solo sobre contenido propio o autorizado del usuario.
+- Antes de publicar o de dar por cerrada una modificación, ejecuta `python service/scripts/selfcheck.py`. Verifica sintaxis, manifiestos, rutas publicadas, ausencia de tokens y que el motor Unicode de `skills/clean-user-facing-text/scripts/text_unicode.py` siga siendo idéntico byte a byte al de `service/scripts/text_unicode.py`.

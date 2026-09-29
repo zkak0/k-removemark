@@ -145,6 +145,23 @@ if (Test-Path $claudeConfigDir) {
     Write-Host "Conector MCP de Claude Desktop configurado con éxito."
 }
 
+# Verificacion de integridad del repo (aviso, no bloquea la instalacion)
+Write-Host ""
+Write-Host "Verificando integridad del repo..."
+try {
+    $checkExe = "python"
+    try { & python --version 2>$null | Out-Null } catch { $checkExe = "python3" }
+    & $checkExe (Join-Path $Root "service\scripts\selfcheck.py")
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "Integridad del repo correcta."
+    } else {
+        Write-Host "Aviso: la verificacion de integridad detecto problemas (ver arriba);"
+        Write-Host "la instalacion continua, pero conviene revisarlos antes de publicar."
+    }
+} catch {
+    Write-Host "No se pudo ejecutar la verificacion de integridad; se continua."
+}
+
 # Precalentar el servicio HTTP para que la primera llamada sea instantánea
 Write-Host ""
 Write-Host "Precalentando servicio HTTP local..."
