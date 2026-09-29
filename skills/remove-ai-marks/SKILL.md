@@ -138,6 +138,14 @@ curl -s -X POST "$WM/inspect" -H 'Content-Type: application/json' \
 
 Mostrá un resumen corto (puntos de código sospechosos; flags C2PA/IA; etiquetas de confianza `confirmed` / `probable` / `informational` / `likely_false_positive`).
 
+**Código de salida ≠ "se limpió".** Un exit 0 solo significa "no falló", no "quedó limpio". Siempre leé el reporte JSON y fijate en estos campos:
+
+- `meta.degraded` — `true` si el formato se procesó en modo best-effort (p. ej. PDF sin `exiftool`): el archivo se copió sin tocarlo. Decilo explícitamente al usuario, no lo reportes como limpio.
+- `still_has_ai_metadata` / `still_has_c2pa` — si siguen en `true`, quedan señales residuales.
+- `post_findings` — lista concreta de lo que sobrevive.
+
+Casos reales: un MP3 con ID3v2 de IA se limpia de verdad (`drop ID3v2.4 tag`, sin residuales); un PDF sin `exiftool` sale con `mode: "copy"`, `degraded: true` y el `/Producer` de IA intacto. Reportá los dos de forma distinta.
+
 La detección opcional de píxeles (puntuación SynthID) y la eliminación de píxeles (CtrlRegen / DiffusionPurification) y los harnesses MarkDiffusion/MarkLLM son backends pesados externos. Corren en contenedores opcionales del servicio o checkouts del host — consultá `/capabilities` antes de prometerlos, y nunca fingas que un detector local es un detector oficial del fabricante.
 
 ### 2b. Detección de marcas antes/después (cuando esté configurado)
