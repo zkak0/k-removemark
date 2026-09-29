@@ -5,6 +5,7 @@
 /*
 !/.claude-plugin/
 !/.claude-plugin/**
+!/.gitattributes
 !/service/
 !/service/**
 !/skills/

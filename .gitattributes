@@ -1,0 +1,17 @@
+# Normaliza los finales de linea en el repositorio.
+#
+# Sin esto, Git guarda LF pero entrega CRLF en el working tree en Windows, y
+# los instaladores .sh / .command quedan con finales que algunos shells de
+# macOS y Linux rechazan.
+* text=auto eol=lf
+
+# Los ficheros de Windows pueden seguir con CRLF nativo.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Los ficheros que nunca deben llevar BOM.
+*.py text eol=lf
+*.sh text eol=lf
+*.command text eol=lf
+*.json text eol=lf
