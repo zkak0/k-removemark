@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Strip invisible Unicode / normalize space homoglyphs (Layer A)."""
+"""Elimina Unicode invisible / normaliza espacios homoglifos (capa A)."""
 
 from __future__ import annotations
 
@@ -16,35 +16,40 @@ from text_unicode import clean_text  # noqa: E402
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("path", nargs="?", default="-", help="Input text file, or - for stdin")
-    p.add_argument("-o", "--output", help="Output path (default: stdout or *.cleaned.*)")
-    p.add_argument("--nfkc", action="store_true", help="Apply Unicode NFKC after scrub")
+    p.add_argument("path", nargs="?", default="-", help="Ruta del fichero de texto, o - para stdin")
+    p.add_argument("-o", "--output", help="Ruta de salida (por defecto stdout o *.cleaned.*)")
+    p.add_argument("--nfkc", action="store_true", help="Aplicar normalización Unicode NFKC tras la limpieza")
     p.add_argument(
         "--aggressive-homoglyphs",
         action="store_true",
-        help="Map Cyrillic/fullwidth Latin confusables to ASCII Latin",
+        help="Convertir los homoglifos latinos cirílicos/de ancho completo a ASCII",
     )
     p.add_argument(
         "--no-normalize-spaces",
         action="store_true",
-        help="Do not rewrite exotic spaces to U+0020",
+        help="No reescribir los espacios exóticos a U+0020",
     )
     p.add_argument(
         "--strip-emoji-glue",
         action="store_true",
-        help="Paranoid: strip all load-bearing invisibles too (emoji glue, script joiners, flag tags, same-script fillers/selectors, orthographic Cf)",
+        help="Paranoico: eliminar también los invisibles con función (pegamento de emojis, uniones de escritura, etiquetas de bandera, rellenos/selectores de la misma escritura, Cf ortográficos)",
     )
-    p.add_argument("--stats", action="store_true", help="Print stats JSON to stderr")
+    p.add_argument(
+        "--strip-bidi",
+        action="store_true",
+        help="Eliminar también las marcas de dirección (LRM, RLM, LRE…RLO, LRI…PDI). Rompe el texto de derecha a izquierda: revisa antes de usarlo en árabe o hebreo",
+    )
+    p.add_argument("--stats", action="store_true", help="Imprimir las estadísticas en JSON por stderr")
     p.add_argument(
         "--force-text",
         action="store_true",
-        help="Clean even when the input looks like a binary container "
-        "(this rewrites the bytes and will corrupt the file)",
+        help="Limpiar aunque la entrada parezca un contenedor binario "
+        "(reescribe los bytes y corromperá el archivo)",
     )
     p.add_argument(
         "--in-place",
         action="store_true",
-        help="Overwrite input file (creates .bak backup)",
+        help="Sobrescribir el archivo de entrada (crea una copia .bak)",
     )
     args = p.parse_args()
 
@@ -55,6 +60,7 @@ def main() -> int:
         aggressive_homoglyphs=args.aggressive_homoglyphs,
         normalize_spaces=not args.no_normalize_spaces,
         strip_emoji_glue=args.strip_emoji_glue,
+        strip_bidi=args.strip_bidi,
     )
 
     out = args.output

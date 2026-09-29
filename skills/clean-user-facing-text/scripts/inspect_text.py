@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Inspect text for invisible Unicode / space homoglyphs (Layer A)."""
+"""Inspecciona texto buscando Unicode invisible / homoglifos de espacio (capa A)."""
 
 from __future__ import annotations
 
@@ -16,22 +16,22 @@ from text_unicode import human_report, inspect_text  # noqa: E402
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("path", nargs="?", default="-", help="Text file path, or - for stdin")
-    p.add_argument("--json", action="store_true", help="JSON report")
+    p.add_argument("path", nargs="?", default="-", help="Ruta del fichero de texto, o - para stdin")
+    p.add_argument("--json", action="store_true", help="Informe en JSON")
     p.add_argument(
         "--aggressive",
         action="store_true",
-        help="Also flag Latin confusable / fullwidth lookalikes",
+        help="Marcar también los homoglifos latinos / de ancho completo",
     )
     p.add_argument(
         "--strip-emoji-glue",
         action="store_true",
-        help="Paranoid: flag all load-bearing invisibles too (emoji glue, script joiners, flag tags, same-script fillers/selectors, orthographic Cf)",
+        help="Paranoico: marcar todos los invisibles con función (pegamento de emojis, uniones de escritura, etiquetas de bandera, rellenos/selectores de la misma escritura, Cf ortográficos)",
     )
     p.add_argument(
         "--force-text",
         action="store_true",
-        help="Scan even when the input looks like a binary container",
+        help="Analizar aunque la entrada parezca un contenedor binario",
     )
     args = p.parse_args()
 

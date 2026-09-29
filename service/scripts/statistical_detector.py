@@ -27,7 +27,7 @@ kwargs) for open-LLM / controlled experiments, or leave the default key and read
 the z-score as a *relative* signal. It is never presented as a vendor detector.
 
 The embedders (KGWEmbedder / SynthIDTextMeanEmbedder) synthesize marks over a
-word bank with no model — used by verify_harness.py to measure real TP/FP in CI.
+word bank with no model — used to measure real TP/FP without downloading weights.
 """
 
 from __future__ import annotations
@@ -450,7 +450,7 @@ class ExponentialDetector:
         }
 
 
-# -- embedders (for verify_harness: synthetic marks, no model) ---------------
+# -- embedders (synthetic marks, no model) -----------------------------------
 
 
 class WordBank:

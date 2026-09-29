@@ -1,5 +1,5 @@
 {
-  "description": "Multi-vendor AI watermark remover skills (agentskills.io format).",
+  "description": "Skills para eliminar marcas de agua de IA de varios fabricantes (formato agentskills.io).",
   "skills": [
     "skills/remove-ai-marks",
     "skills/clean-user-facing-text"

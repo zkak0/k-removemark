@@ -7,6 +7,7 @@
 !/.claude-plugin/**
 !/service/
 !/service/**
+!/skills/
 !/skills/remove-ai-marks/
 !/skills/remove-ai-marks/**
 !/AGENTS.md
@@ -50,3 +51,9 @@ posts.md
 # Docker path is not shipped (agents run Python directly)
 /service/Dockerfile*
 /service/.dockerignore
+
+# Development-only tooling. These are NOT end-user/agent surface: the markdiffusion
+# and synthid backends stay published because image_meta.py and the setup_*.sh
+# scripts invoke them at runtime.
+/service/scripts/bench_synthid_text.py
+/service/scripts/verify_harness.py

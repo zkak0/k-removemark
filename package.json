@@ -1,7 +1,7 @@
 {
   "name": "k-removemark",
   "version": "0.1.0",
-  "description": "Unified multi-vendor AI watermark remover: text (invisible Unicode + statistical KGW/SynthID-class), code, images (metadata + visible), video, audio and container metadata, for every AI agent.",
+  "description": "Eliminador unificado de marcas de agua de IA de varios fabricantes: texto (Unicode invisible + estadística KGW/SynthID-class), código, imágenes (metadatos + visibles), vídeo, audio y metadatos de contenedor, para cualquier agente de IA.",
   "license": "MIT",
   "skills": [
     "./skills/remove-ai-marks",

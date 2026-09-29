@@ -1,25 +1,25 @@
 {
   "name": "remove-ai-marks",
   "version": "0.1.0",
-  "description": "Remove multi-vendor AI provenance marks: invisible Unicode, statistical text watermarks (Layer B rewrite), and C2PA/EXIF/XMP/container metadata on images, documents, audio and video.",
+  "description": "Elimina marcas de procedencia de IA: Unicode invisible, marcas de agua estadísticas de texto (reescritura de capa B) y metadatos C2PA/EXIF/XMP de contenedores en imágenes, documentos, audio y vídeo.",
   "author": { "name": "zkak0" },
   "license": "MIT",
   "skills": [
     {
       "name": "remove-ai-marks",
-      "description": "Strip AI provenance marks across vendors (Claude, Gemini/SynthID-class, OpenAI, open-LLM) from text, code, images, video, audio and metadata. Always offers Layer B rewrite and reports honestly.",
+      "description": "Elimina marcas de procedencia de IA de varios fabricantes (Claude, Gemini/SynthID-class, OpenAI, LLMs abiertos) en texto, código, imágenes, vídeo, audio y metadatos. Siempre ofrece la reescritura de capa B e informa con honestidad.",
       "source": "skills/remove-ai-marks"
     },
     {
       "name": "clean-user-facing-text",
-      "description": "Text hygiene for natural-language content (invisible Unicode, statistical-watermark reduction) without altering meaning.",
+      "description": "Higiene de texto para contenido en lenguaje natural (Unicode invisible, reducción de marcas de agua estadísticas) sin alterar el significado.",
       "source": "skills/clean-user-facing-text"
     }
   ],
   "commands": [
     {
       "name": "remove-ai-marks",
-      "description": "Inspect and clean AI provenance marks (invisible Unicode, metadata, statistical text watermarks) from text, files or clipboard content.",
+      "description": "Inspecciona y limpia marcas de procedencia de IA (Unicode invisible, metadatos, marcas de agua estadísticas) en texto, archivos o contenido del portapapeles.",
       "skill": "remove-ai-marks",
       "argument_hint": "[text or path to file]"
     }
