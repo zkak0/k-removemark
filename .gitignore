@@ -51,6 +51,8 @@
 !/requirements-dev.txt
 !/ruff.toml
 !/pytest.ini
+!/.pre-commit-hooks.yaml
+!/CONTRIBUTING.md
 
 # Exceptions even inside allowed trees
 .env
