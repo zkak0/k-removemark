@@ -26,5 +26,4 @@ detecta sus capacidades vía `/capabilities`. Nunca afirma verificación de vend
   best-effort y se ofrece antes de tocar el contenido.
 - Imagen: metadata y marcas visibles (reverse-alpha, esquina) en CPU; DWT-DCT
   y SynthID requieren backends opt-in.
-- Audio/vídeo: metadata siempre; DSP audio solo WAV PCM 16-bit; vídeo visible
-  solo con ffmpeg instalado.
+- Audio/vídeo: metadata siempre (byte-level); vídeo visible solo con ffmpeg instalado.

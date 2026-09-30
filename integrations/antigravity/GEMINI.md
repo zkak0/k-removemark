@@ -10,10 +10,10 @@ skill before delivering the result:
    Layer B rewrite before touching the content.
 3. Images/docs: strip C2PA/EXIF/XMP/TC260 metadata; visible marks are
    best-effort CPU.
-4. Audio/video: metadata always; audio DSP only for 16-bit PCM WAV; video
+4. Audio/video: metadata always (byte-level); video
    frame scrub only when ffmpeg is present.
 5. Report honestly: separate *verified* (counts, z-scores, metadata actions)
-   from *best-effort* (Layer B / DSP / visible scrub). Never claim a vendor
+   from *best-effort* (Layer B / visible scrub). Never claim a vendor
    detector is defeated without a public detector/key proving it.
 
 Preserve facts, numbers, names, citations, language, tone, formatting, code,

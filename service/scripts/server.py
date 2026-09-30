@@ -50,8 +50,7 @@ from urllib.parse import urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from av_meta import detect_av_format, inspect_av
-from clean_audio import clean_audio
+from av_meta import clean_av, detect_av_format, inspect_av
 from clean_video import clean_video, ffmpeg_path
 from common import (
     MAX_INPUT_BYTES,
@@ -90,7 +89,6 @@ ALLOWED_CLEAN_OPTIONS = {
     "strip_all_metadata": bool,
     "detect_before": bool,
     "detect_after": bool,
-    "dsp": bool,  # audio: waveform perturbation (16-bit PCM WAV)
     "scrub_visible": bool,  # video: frame-wise visible-mark scrub (needs ffmpeg)
     "corner": str,  # video: which corner badge to scrub (bottom-left, ...)
 }
@@ -118,7 +116,7 @@ def capabilities() -> dict[str, Any]:
             "stylometry": True,
         },
         "media": {
-            "audio_dsp": True,  # stdlib DSP on 16-bit PCM WAV
+            "audio_metadata": True,  # WAV/MP3 ID3, byte-level, sin ffmpeg
             "video_scrub": ffmpeg_path() is not None,  # frame-wise scrub needs ffmpeg
         },
         "text_detectors": detector_status(),
@@ -759,15 +757,7 @@ def _clean_payload(data: bytes, name: str, options: dict[str, Any]) -> dict[str,
             if "strip_all_metadata" in options:
                 strip_all = bool(options["strip_all_metadata"])
             fmt = detect_av_format(data)
-            if fmt in ("wav", "mp3", "m4a"):
-                result = clean_audio(
-                    src,
-                    dest,
-                    strip_all_metadata=strip_all,
-                    dsp=bool(options.get("dsp")),
-                )
-                report = {"kind": "audio", **result}
-            else:
+            if fmt in ("mp4", "mov", "m4v"):
                 corner = options.get("corner")
                 if corner not in (None, "bottom-left", "bottom-right", "top-left", "top-right"):
                     raise ValueError(
@@ -781,6 +771,13 @@ def _clean_payload(data: bytes, name: str, options: dict[str, Any]) -> dict[str,
                     corner=corner,
                 )
                 report = {"kind": "video", **result}
+            else:
+                # WAV/MP3 (y .m4a, que es ISOBMFF): solo metadatos, byte-level.
+                # El DSP de audio se elimino; clean_av no necesita ffmpeg.
+                # kind sigue siendo "audio" para no romper el contrato con los
+                # agentes que ya lo consultan.
+                result = clean_av(src, dest, strip_all_metadata=strip_all)
+                report = {"kind": "audio", **result}
             cleaned_bytes = dest.read_bytes()
         else:
             ext = Path(name).suffix

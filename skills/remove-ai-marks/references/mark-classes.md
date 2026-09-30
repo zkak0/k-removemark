@@ -59,6 +59,6 @@ Modelo de dos capas de la industria (C2PA + SynthID; ver guía Institute of AI P
 
 **Reporte honesto:** después de un strip exitoso de C2PA, las marcas soft-bound / SynthID de píxeles (si el generador las usó) pueden seguir siendo detectables por herramientas del fabricante (ej. SynthID Detector, sitios de verificación de Credenciales de Contenido).
 
-## 5. Marcas de agua en dominio de píxeles (imagen, audio, video)
+## 5. Marcas de agua en dominio de píxeles (imagen, video)
 
-Marcas de agua invisibles en multimedia (ej. SynthID para imágenes/audio/video) y C2PA **soft binding** que vive en la señal, no en los metadatos. **Fuera de alcance.**
+Marcas de agua invisibles en multimedia (ej. SynthID para imágenes/video) y C2PA **soft binding** que vive en la señal, no en los metadatos. **Fuera de alcance.**

@@ -37,7 +37,7 @@ def main() -> int:
     p.add_argument(
         "--keep-non-ai-metadata",
         action="store_true",
-        help="Images/audio/video: only drop C2PA/AI-looking segments",
+        help="Imagenes, video y audio: solo elimina segmentos C2PA o de apariencia IA",
     )
     p.add_argument(
         "--as",

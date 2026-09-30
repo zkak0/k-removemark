@@ -106,7 +106,7 @@ def main() -> int:
             emit_json({"kind": "av", "path": file_label, **report.to_dict()})
         else:
             print(f"Archivo: {file_label}")
-            print("Tipo: audio/video")
+            print("Tipo: video o audio (metadatos)")
             print(f"Ruta: {report.path}")
             print(f"Formato: {report.format}")
             print(f"C2PA: {report.has_c2pa}")

@@ -55,7 +55,7 @@ TOOLS = [
     {
         "name": "inspect",
         "description": (
-            "Inspecciona un archivo (texto, imagen, contenedor, audio/video) en busca de "
+            "Inspecciona un archivo (texto, imagen, contenedor, video o audio) en busca de "
             "marcas de procedencia de IA: Unicode invisible, metadatos C2PA/EXIF/XMP/IPTC, "
             "marcas visibles."
         ),
@@ -109,7 +109,6 @@ ALLOWED_CLEAN_OPTIONS = frozenset(
         "strip_all_metadata",
         "detect_before",
         "detect_after",
-        "dsp",
         "scrub_visible",
         "corner",
     }

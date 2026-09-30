@@ -2,12 +2,12 @@
   "name": "k-removemark",
   "owner": { "name": "zkak0" },
   "version": "0.1.0",
-  "description": "Elimina marcas de procedencia de IA de varios fabricantes en texto, código, imágenes, vídeo, audio y metadatos de archivo.",
+  "description": "Elimina marcas de procedencia de IA de varios fabricantes en texto, código, imágenes, vídeo, audio (metadatos) y metadatos de archivo.",
   "plugins": [
     {
       "name": "remove-ai-marks",
       "version": "0.1.0",
-      "description": "Elimina marcas de procedencia de IA de varios fabricantes (Claude, Gemini/SynthID-class, OpenAI, LLMs abiertos) en texto, código, imágenes, vídeo, audio y metadatos. Siempre ofrece la reescritura de capa B e informa con honestidad.",
+      "description": "Elimina marcas de procedencia de IA de varios fabricantes (Claude, Gemini/SynthID-class, OpenAI, LLMs abiertos) en texto, código, imágenes, vídeo, audio (metadatos) y metadatos. Siempre ofrece la reescritura de capa B e informa con honestidad.",
       "author": { "name": "zkak0" },
       "license": "MIT"
     }

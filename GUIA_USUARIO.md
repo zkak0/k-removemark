@@ -11,7 +11,7 @@ Todo funciona **en tu propia computadora** y **sin internet**: tus documentos nu
 Elimina, de tus textos y archivos:
 
 - **Caracteres invisibles** que delatan que un texto fue escrito por una IA.
-- **Metadatos ocultos** en Word, PDF, imágenes, audio y video (información interna como autor, programa usado, huellas digitales C2PA/EXIF).
+- **Metadatos ocultos** en Word, PDF, imágenes y video (información interna como autor, programa usado, huellas digitales C2PA/EXIF).
 - **Marcas visibles** en imágenes (cuando es posible).
 
 Al terminar te entrega el archivo limpio y un **informe honesto** con lo que se eliminó realmente.

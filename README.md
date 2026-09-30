@@ -1,6 +1,6 @@
 # k-removemark
 
-**Limpia marcas de agua de IA de tus archivos.** Texto, código, imágenes, vídeo, audio y metadatos — todo en tu equipo, sin subir nada a internet.
+**Limpia marcas de agua de IA de tus archivos.** Texto, código, imágenes, vídeo y metadatos — todo en tu equipo, sin subir nada a internet.
 
 ## 🤖 Para asistentes de IA (protocolo de arranque)
 
@@ -33,10 +33,10 @@ Quita las marcas que dejan los generadores de IA (Claude, Gemini/SynthID, OpenAI
 | Qué elimina | Cómo |
 | --- | --- |
 | **Texto y código** | Caracteres invisibles, espacios raros y señales ocultas |
-| **Imágenes, vídeo y audio** | Marcas visibles y señales por DSP (en CPU) |
+| **Imágenes y vídeo** | Marcas visibles y señales por DSP en la imagen (en CPU) |
 | **Archivos** | C2PA, EXIF, XMP y metadatos de procedencia |
 
-Funciona con PDF, DOCX, XLSX, PPTX, EPUB, ODT, HTML, Markdown, PNG, JPEG, WebP, AVIF, HEIC, BMP, GIF, TIFF, SVG, MP4/MOV, WAV y MP3.
+Funciona con PDF, DOCX, XLSX, PPTX, EPUB, ODT, HTML, Markdown, PNG, JPEG, WebP, AVIF, HEIC, BMP, GIF, TIFF, SVG, MP4/MOV, y WAV/MP3 solo metadatos.
 
 - **Privacidad:** todo ocurre localmente. Nada se envía a la nube.
 - **Sin GPU y sin modelos:** 100 % CPU por defecto.

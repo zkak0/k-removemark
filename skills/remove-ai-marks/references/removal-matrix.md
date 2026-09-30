@@ -20,7 +20,7 @@
 | Markdown AI frontmatter keys / data URIs embebidas | Eliminar keys; limpiar data URIs embebidas | `clean_file.py` | Pierde keys YAML; limpia rasters embebidos | Sí |
 | Marca de agua de imagen por píxeles (SynthID-media / StegaStamp / Tree-Ring / StableSignature) | Regeneración CtrlRegen (backend externo) | `clean_ctrlregen.py` / `clean_image.py --remove-pixel ctrlregen` | Regenera píxeles; cómputo pesado; deriva de detalle en fuerza alta | No sin detector oficial; puntuación reverse-SynthID es un surrogate local; **harness MarkDiffusion same-scheme** (`markdiffusion_harness.py detect`) verifica una configuración Tree-Ring-class antes/después |
 | Marca de agua Tree-Ring-class (imagen) | Purificación por difusión — regeneración ciega (backend MarkDiffusion externo) | `clean_image.py --remove-pixel diffusion` | Regeneración ciega; más deriva que CtrlRegen; cómputo pesado | Same-scheme only via el harness MarkDiffusion (no es oráculo de detector de fabricante) |
-| Marcas de agua de audio/video (SynthID-media) | — | Fuera de alcance | — | — |
+| Marcas de agua de audio/video (SynthID-media) | Solo metadatos; el DSP de audio se elimino | `clean_file.py` (metadatos ID3v2/WAV) | El texto de la marca en audio no se elimina | **No.** La marca de audio no se puede reescribir; el DSP se elimino del camino por defecto |
 | C2PA soft binding (enlace en contenido a manifiesto remoto) | — | Fuera de alcance (sobrevive a nuestro strip de metadatos) | — | Solo detector de fabricante |
 | Backdoors de modelo basadas en datos | — | Fuera de alcance | — | — |
 

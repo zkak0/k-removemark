@@ -4,7 +4,7 @@ Instrucciones para agentes de IA que trabajen con este repositorio.
 
 ## Qué es
 
-k-removemark elimina marcas de procedencia de IA (Unicode invisible, marcas estadísticas de texto, metadatos C2PA/EXIF/XMP) de texto, código, imágenes, vídeo, audio y documentos. Todo local, en CPU, sin subir nada a internet.
+k-removemark elimina marcas de procedencia de IA (Unicode invisible, marcas estadísticas de texto, metadatos C2PA/EXIF/XMP) de texto, código, imágenes, vídeo y documentos. Todo local, en CPU, sin subir nada a internet.
 
 ## Protocolo de arranque (cuando un usuario pega este enlace)
 

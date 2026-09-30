@@ -71,7 +71,7 @@ Si `WATERMARKS_SERVER_API_KEY` está configurado en el servicio, el mismo valor 
 curl -s "$WM/capabilities"
 ```
 
-Informa qué herramientas opcionales hay server-side (`c2patool`, `exiftool`, `qpdf`), los evaluadores presentes (`scorers.stylometry`, `scorers.synthid`, `scorers.synthid_http`), los detectores de marcas de texto (`text_detectors.markllm`, `text_detectors.claude-text`), el soporte multimedia (`media.audio_dsp`, `media.video_scrub`), y qué backends pesados están configurados (`pixel_backends.ctrlregen`, `pixel_backends.diffusion`, `harnesses.markllm`). **Basá tu recomendación en esto**: solo habla de eliminación de píxeles / evaluación SynthID / detección de vendor cuando el servicio reporte el backend presente.
+Informa qué herramientas opcionales hay server-side (`c2patool`, `exiftool`, `qpdf`), los evaluadores presentes (`scorers.stylometry`, `scorers.synthid`, `scorers.synthid_http`), los detectores de marcas de texto (`text_detectors.markllm`, `text_detectors.claude-text`), el soporte multimedia (`media.audio_metadata`, `media.video_scrub`), y qué backends pesados están configurados (`pixel_backends.ctrlregen`, `pixel_backends.diffusion`, `harnesses.markllm`). **Basá tu recomendación en esto**: solo habla de eliminación de píxeles / evaluación SynthID / detección de vendor cuando el servicio reporte el backend presente.
 
 ## API HTTP (curl)
 
@@ -122,7 +122,7 @@ Para **contenido propio** o autorizado (privacidad, higiene, investigación). No
 | `.txt` / código | texto Capa A (+ formateador para código) |
 | `.md` / `.html` | limpieza de contenedor (frontmatter/meta) + Capa A |
 | `.png` / `.jpg` / `.jpeg` / `.webp` / `.avif` / `.heic` / `.bmp` / `.gif` / `.tiff` | strip de metadatos de imagen (+ scrub opcional de marcas visibles con `image_watermark.py`) |
-| `.wav` / `.mp3` / `.m4a` | strip de metadatos de audio (+ `dsp: true` para WAV PCM 16-bit) |
+| `.wav` / `.mp3` / `.m4a` | strip de metadatos de audio (byte-level; el DSP de audio se elimino) |
 | `.mp4` / `.mov` / `.m4v` | strip de metadatos de video (+ scrub de marcas visibles frame a frame si ffmpeg está presente) |
 | `.svg` / `.pdf` / `.docx` / `.epub` / `.odt` | strip de metadatos de contenedor |
 | Directorio / sitio web | auditoría agregada por las CLIs del servicio (ver abajo) |
@@ -212,7 +212,7 @@ Siempre declará:
 
 - Qué eliminó la Capa A / limpieza de contenedor de forma **verificable** (conteos, acciones) — del `report`.
 - Qué hizo la Capa B (mejor esfuerzo estadístico; **no puede reclamar "indetectable" oficial**). El riesgo residual es menor para texto corto/muy predecible y mayor para prosa larga de alta entropía.
-- Fuera de alcance: SynthID de píxeles/audio/video (**basado en modelo**), **C2PA soft binding**, detectores de clave secreta, backdoors de entrenamiento. Las marcas visibles/metadatos de audio/video SÍ están en alcance (strip de metadatos siempre; DSP de audio en WAV; scrub de video requiere ffmpeg).
+- Fuera de alcance: SynthID de píxeles/audio/video (**basado en modelo**), **C2PA soft binding**, detectores de clave secreta, backdoors de entrenamiento. Los metadatos de audio/video SÍ están en alcance (strip siempre; scrub de video requiere ffmpeg). El DSP de audio se eliminó del camino por defecto.
 - Soft binding / marcas multimedia pueden seguir siendo detectables por herramientas del fabricante después del strip.
 - Preferí escribir `*.cleaned.*` a menos que el usuario pidió sobrescribir.
 - Ética: contenido propio / sin teatro de cumplimiento.
@@ -223,7 +223,7 @@ Siempre declará:
 - La Capa B no se puede verificar en oro sin detectores/keys del fabricante. Los harnesses opcionales MarkLLM/MarkDiffusion verifican una configuración específica antes/después, pero solo para la misma configuración y no son un oráculo de detección oficial.
 - El strip de PDF es mejor esfuerzo sin `exiftool`, e incompleto sin `qpdf` server-side.
 - Las marcas de **imagen** en dominio de píxeles se pueden eliminar opcionalmente con el backend CtrlRegen (`remove_pixel: ctrlregen`) o DiffusionPurification de MarkDiffusion (`remove_pixel: diffusion`); ambos son pesados, alteran la imagen y necesitan el backend presente (`/capabilities`).
-- **Audio** (`.wav/.mp3/.m4a`) y **video** (`.mp4/.mov`): `/clean` siempre hace strip de metadatos (stdlib). DSP de audio (`dsp: true`) phase-randomiza PCM WAV 16-bit y aplica notch al tono dominante — mejor esfuerzo, no es una derrota del vendor; los formatos comprimidos son solo metadatos. El scrub de marcas visibles frame a frame en video (`scrub_visible: true`, `corner` opcional) requiere ffmpeg y es mejor esfuerzo.
+- **Audio** (`.wav/.mp3/.m4a`) y **video** (`.mp4/.mov`): `/clean` siempre hace strip de metadatos (byte-level, stdlib, sin ffmpeg). El DSP de audio ya **no** está en el camino por defecto: no se phase-randomiza ni se aplica notch, solo se eliminan metadatos (p. ej. la etiqueta ID3v2 completa). El scrub de marcas visibles frame a frame en video (`scrub_visible: true`, `corner` opcional) requiere ffmpeg y es mejor esfuerzo.
 - Las marcas SynthID basadas en modelo en píxeles/audio/video están fuera del alcance del camino por defecto (documentados opt-ins GPU).
 - El evaluador reverse-SynthID es externo, mejor esfuerzo y bajo licencia Research no comercial; no es un detector oficial de Google. Google retiró su detector oficial SynthID-text de la API en agosto de 2026, así que solo queda el harness MarkLLM de misma configuración. La API de detección de Claude fue anunciada pero aún no es pública — el detector `claude-text` reporta no disponible hasta que salga.
 - **C2PA soft binding** (marca de contenido que se re-enlaza a un manifiesto remoto después del strip de metadatos) está fuera de alcance — el strip de C2PA hard-bound no la limpia.
