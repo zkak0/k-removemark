@@ -53,6 +53,8 @@
 !/pytest.ini
 !/.pre-commit-hooks.yaml
 !/CONTRIBUTING.md
+!/install_skill.py
+!/install-skill.sh
 
 # Exceptions even inside allowed trees
 .env
