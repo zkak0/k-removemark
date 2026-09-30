@@ -166,7 +166,15 @@ def load_rgb(path: Path) -> tuple[int, int, list[list[tuple[int, int, int]]]]:
         from PIL import Image  # type: ignore[import-not-found]
     except ImportError:
         raise ValueError(
-            f"decoding {path.suffix} images needs Pillow (PNG works without it)"
+            f"decodificar imagenes {path.suffix} necesita Pillow (PNG funciona sin el)"
+        ) from None
+    except SystemError as e:
+        # Pillow instalado pero incompatible con este interprete: el import
+        # revienta con SystemError, no con ImportError, y el mensaje util se
+        # pierde. Es el caso tipico en una venv con una alfa de Python.
+        raise ValueError(
+            f"Pillow esta instalado pero no es compatible con este Python ({e}); "
+            f"desinstalalo o usa Python 3.12 (PNG funciona sin el)"
         ) from None
     img = Image.open(path).convert("RGB")
     w, h = img.size
@@ -183,7 +191,12 @@ def save_rgb(
     try:
         from PIL import Image  # type: ignore[import-not-found]
     except ImportError:
-        raise ValueError(f"writing {suffix} needs Pillow; PNG works without it") from None
+        raise ValueError(f"escribir {suffix} necesita Pillow; PNG funciona sin el") from None
+    except SystemError as e:
+        raise ValueError(
+            f"Pillow esta instalado pero no es compatible con este Python ({e}); "
+            f"desinstalalo o usa Python 3.12 (PNG funciona sin el)"
+        ) from None
     img = Image.new("RGB", (w, h))
     img.putdata([p for row in rows for p in row])
     img.save(path)
