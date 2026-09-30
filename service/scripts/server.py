@@ -457,12 +457,12 @@ _COMMON_ERRORS = {
         "content": {"application/json": {"schema": _ERROR_SCHEMA}},
     },
     "401": {
-        "description": "Missing/invalid bearer token",
+        "description": "Falta el token de API o es invalido",
         "content": {"application/json": {"schema": _ERROR_SCHEMA}},
     },
     "404": {"description": "Not found", "content": {"application/json": {"schema": _ERROR_SCHEMA}}},
     "413": {
-        "description": "Request body too large",
+        "description": "Cuerpo de la peticion demasiado grande",
         "content": {"application/json": {"schema": _ERROR_SCHEMA}},
     },
     "500": {
@@ -531,17 +531,17 @@ def _tmp_path(tmpdir: Path, *parts: str) -> Path:
     """
     path = tmpdir.joinpath(*parts)
     if path.parent != tmpdir:
-        raise ValueError("unsafe filename")
+        raise ValueError("nombre de archivo no seguro")
     return path
 
 
 def _decode_input(body: dict[str, Any]) -> tuple[bytes, str]:
     raw = body.get("file")
     if not isinstance(raw, str):
-        raise ValueError("missing string field 'file' (base64-encoded bytes)")
+        raise ValueError("falta el campo de texto 'file' (bytes codificados en base64)")
     name = body.get("name")
     if name is not None and not isinstance(name, str):
-        raise ValueError("'name' must be a string")
+        raise ValueError("'name' debe ser un texto")
     try:
         data = base64.b64decode(raw, validate=True)
     except (binascii.Error, ValueError):
@@ -553,14 +553,14 @@ def _parse_clean_options(options: Any) -> dict[str, Any]:
     if options is None:
         return {}
     if not isinstance(options, dict):
-        raise ValueError("'options' must be an object")
+        raise ValueError("'options' debe ser un objeto")
     for key, value in options.items():
         if key not in ALLOWED_CLEAN_OPTIONS:
-            raise ValueError(f"unknown option: {key}")
+            raise ValueError(f"opcion desconocida: {key}")
         expected_type = ALLOWED_CLEAN_OPTIONS[key]
         if not isinstance(value, expected_type):
             type_name = "boolean" if expected_type is bool else "string"
-            raise ValueError(f"option {key!r} must be a {type_name}")
+            raise ValueError(f"la opcion {key!r} debe ser {type_name}")
     return options
 
 
@@ -577,7 +577,7 @@ def _batch_items(
     """
     files = body.get("files")
     if not isinstance(files, list):
-        raise ValueError("missing array field 'files'")
+        raise ValueError("falta el campo de lista 'files'")
     if not files:
         raise ValueError("'files' must not be empty")
     if len(files) > MAX_BATCH_FILES:
@@ -586,7 +586,7 @@ def _batch_items(
     items: list[tuple[str, bytes, dict[str, Any], str | None]] = []
     for entry in files:
         if not isinstance(entry, dict):
-            items.append(("", b"", {}, "each entry in 'files' must be an object"))
+            items.append(("", b"", {}, "cada entrada de 'files' debe ser un objeto"))
             continue
         try:
             data, name = _decode_input(entry)
@@ -740,7 +740,7 @@ def _clean_payload(data: bytes, name: str, options: dict[str, Any]) -> dict[str,
                 strip_all = bool(options["strip_all_metadata"])
             remove_pixel = options.get("remove_pixel")
             if remove_pixel not in (None, "ctrlregen", "diffusion"):
-                raise ValueError("remove_pixel must be one of: ctrlregen, diffusion")
+                raise ValueError("remove_pixel debe ser uno de: ctrlregen, diffusion")
             result = clean_image(
                 src,
                 dest,
@@ -771,7 +771,7 @@ def _clean_payload(data: bytes, name: str, options: dict[str, Any]) -> dict[str,
                 corner = options.get("corner")
                 if corner not in (None, "bottom-left", "bottom-right", "top-left", "top-right"):
                     raise ValueError(
-                        "corner must be one of: bottom-left, bottom-right, top-left, top-right"
+                        "corner debe ser uno de: bottom-left, bottom-right, top-left, top-right"
                     )
                 result = clean_video(
                     src,
@@ -892,7 +892,7 @@ class Handler(BaseHTTPRequestHandler):
             oversized = raw_len is not None and raw_len.isdigit() and int(raw_len) > MAX_BODY_BYTES
             self._respond(
                 HTTPStatus.REQUEST_ENTITY_TOO_LARGE if oversized else HTTPStatus.BAD_REQUEST,
-                {"ok": False, "error": "invalid request body"},
+                {"ok": False, "error": "cuerpo de la peticion invalido"},
             )
             return
         try:
