@@ -1861,6 +1861,98 @@ def _pdf_structural_rewrite(dest: Path, actions: list[str]) -> bool:
     return False
 
 
+_PDF_INFO_REF_RE = re.compile(rb"/Info\s+(\d+)\s+\d+\s+R")
+
+
+def _pdf_obj_re(num: bytes) -> re.Pattern[bytes]:
+    """Match 'N 0 obj ... endobj' for object number *num*."""
+    return re.compile(rb"(?<![0-9])" + num + rb"\s+0\s+obj(.*?)endobj", re.S)
+
+
+def _pdf_neutralize_info(data: bytes, actions: list[str]) -> bytes | None:
+    """Empty the /Info dictionary strings, preserving byte length.
+
+    Without exiftool or qpdf a PDF would otherwise be copied verbatim with its
+    AI /Producer and /Creator still in the clear. A PDF does not need to be
+    re-indexed to lose a marker: blanking the string *contents* while keeping
+    the delimiters and the exact byte count leaves the xref table and startxref
+    valid, and the marker leaves the file.
+
+    Only the object referenced by /Info is touched, so page content streams keep
+    their text. Returns the rewritten bytes, or None when /Info is not present
+    as a plaintext object (PDF 1.5+ object streams), in which case the caller
+    must report degraded rather than claim success.
+    """
+    ref = None
+    for ref in _PDF_INFO_REF_RE.finditer(data):
+        pass  # last /Info wins: the trailer is written last
+    if ref is None:
+        return None
+    num = ref.group(1)
+
+    obj = _pdf_obj_re(num).search(data)
+    if obj is None:
+        # /Info lives in a compressed object stream: not addressable here.
+        actions.append("PDF /Info en object stream: no se puede neutralizar sin qpdf")
+        return None
+
+    body = obj.group(1)
+    out = bytearray()
+    i = 0
+    neutralized = 0
+    while i < len(body):
+        c = body[i]
+        if c == 0x3C and i + 1 < len(body) and body[i + 1] == 0x3C:  # << dict
+            out += b"<<"
+            i += 2
+            continue
+        if c == 0x3C and i + 1 < len(body) and body[i + 1] == 0x3E:  # >> end dict
+            out += b">>"
+            i += 2
+            continue
+        if c == 0x28:  # ( literal string: balanced parens, backslash escapes
+            j = i + 1
+            depth = 1
+            while j < len(body) and depth:
+                if body[j] == 0x5C:
+                    j += 2
+                    continue
+                if body[j] == 0x28:
+                    depth += 1
+                elif body[j] == 0x29:
+                    depth -= 1
+                j += 1
+            out += b"(" + b" " * (j - i - 2) + b")"
+            neutralized += 1
+            i = j
+            continue
+        if c == 0x3C:  # < hex string
+            j = body.find(b">", i)
+            j = len(body) if j < 0 else j + 1
+            out += b"<" + b"0" * (j - i - 2) + b">"
+            neutralized += 1
+            i = j
+            continue
+        out.append(c)
+        i += 1
+
+    if not neutralized:
+        return None
+
+    # Rebuild positionally: obj.span(1) locates the /Info body unambiguously,
+    # whereas a bytes.replace() on the body could hit an identical copy that
+    # appears earlier in a content stream.
+    bs, be = obj.span(1)
+    new_data = data[:bs] + bytes(out) + data[be:]
+    if len(new_data) != len(data):  # belt and braces: never shift the xref
+        actions.append("neutralizacion /Info descartada: cambiaria el tamano del archivo")
+        return None
+    actions.append(
+        f"neutralizada info del PDF: {neutralized} cadenas vaciadas (tamano conservado)"
+    )
+    return new_data
+
+
 def clean_pdf(path: Path, dest: Path) -> tuple[list[str], dict]:
     """Best-effort PDF clean. Prefers exiftool; falls back to XMP strip warning."""
     actions: list[str] = []
@@ -1910,6 +2002,16 @@ def clean_pdf(path: Path, dest: Path) -> tuple[list[str], dict]:
         safe_write_bytes(dest, new)
         actions.append("warning: pure-stdlib PDF strip is best-effort; prefer exiftool")
         return actions, {"mode": "stdlib-xmp", "degraded": True}
+
+    # No XMP packet: try neutralizing the /Info dictionary with stdlib only.
+    # A PDF does not need re-indexing to lose a marker, so this is a real
+    # removal of the metadata *text* and not a copy.
+    neutralized = _pdf_neutralize_info(new, actions)
+    if neutralized is not None:
+        safe_write_bytes(dest, neutralized)
+        # degraded stays False because the file was genuinely rewritten, not
+        # copied. Re-inspection decides whether this counts as clean.
+        return actions, {"mode": "stdlib-info", "degraded": False}
 
     safe_write_bytes(dest, data)
     actions.append(
