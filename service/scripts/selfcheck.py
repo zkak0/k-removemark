@@ -222,6 +222,72 @@ def check_no_secrets() -> int:
     return fallos
 
 
+def check_service() -> int:
+    print("7. El servicio arranca, responde /health y no deja procesos huerfanos")
+    import json
+    import os
+    import socket
+    import subprocess
+    import time
+    import urllib.error
+    import urllib.request
+
+    # Puerto efimero: nunca colisiona con un servicio ya en marcha ni con el
+    # 8765 por defecto que usan los usuarios.
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]
+
+    env = dict(os.environ, WATERMARKS_SERVER_PORT=str(port))
+    proc = subprocess.Popen(  # noqa: S603
+        [sys.executable, str(SCRIPTS / "server.py")],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        env=env,
+    )
+    try:
+        base = f"http://127.0.0.1:{port}"
+        ok = False
+        for _ in range(40):  # hasta ~8s de arranque
+            if proc.poll() is not None:
+                _fail(f"el servicio termino de inmediato (rc={proc.returncode})")
+                return 1
+            try:
+                with urllib.request.urlopen(f"{base}/health", timeout=2) as r:
+                    if r.status == 200 and json.loads(r.read())["ok"] is True:
+                        ok = True
+                        break
+            except (urllib.error.URLError, OSError, ValueError, KeyError):
+                time.sleep(0.2)
+        if not ok:
+            _fail(f"/health no respondio en {base}")
+            return 1
+        with urllib.request.urlopen(f"{base}/capabilities", timeout=3) as r:
+            claves = json.loads(r.read()).keys()
+        for requerida in ("ok", "tools"):
+            if requerida not in claves:
+                _fail(f"/capabilities sin la clave {requerida!r}: {sorted(claves)}")
+                return 1
+        print(f"   ok (puerto {port}, /health y /capabilities responden)")
+    finally:
+        proc.terminate()
+        try:
+            proc.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.wait(timeout=5)
+    # El puerto debe quedar libre: un huerfano seria un fallo real.
+    for _ in range(20):
+        with socket.socket() as s:
+            s.settimeout(0.5)
+            if s.connect_ex(("127.0.0.1", port)) != 0:
+                print("   ok (puerto liberado, sin proceso huerfano)")
+                return 0
+        time.sleep(0.2)
+    _fail(f"el puerto {port} sigue ocupado tras terminar el servicio")
+    return 1
+
+
 def main() -> int:
     print("k-removemark: verificacion de integridad\n")
     fallos = 0
@@ -232,6 +298,7 @@ def main() -> int:
         check_required_files,
         check_vendored_engine,
         check_no_secrets,
+        check_service,
     ):
         fallos += check()
         print()
