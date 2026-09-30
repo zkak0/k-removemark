@@ -438,7 +438,7 @@ def collect_urls(
         candidate_origin = _url_origin(loc)
 
         if not _origin_allowed(candidate_origin, origin):
-            raise ValueError(f"cross-origin sitemap URL is not allowed: {loc}")
+            raise ValueError(f"no se permite URL de sitemap de origen cruzado: {loc}")
 
     def _recurse(url: str, depth: int = 0) -> None:
         if len(urls) >= max_pages or depth > 3:
