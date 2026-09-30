@@ -745,10 +745,12 @@ DOCX_META_PARTS = (
     "docProps/app.xml",
     "docProps/custom.xml",
 )
-DOCX_CUSTOM_PREFIXES = (
-    "customXml/",
-    "docProps/",
-)
+# The C2PA manifest inside an OOXML package. Two shapes must be handled and
+# _drop_tag_blocks only covers the paired one (it searches for a closing tag),
+# so the self-closing form needs its own pattern.
+_C2PA_MANIFEST_OPEN_RE = re.compile(r"<c2pa:manifest\b[^>]*>", re.I)
+_C2PA_MANIFEST_CLOSE_RE = re.compile(r"</c2pa:manifest\s*>", re.I)
+_C2PA_MANIFEST_SELF_CLOSING_RE = re.compile(r"<c2pa:manifest\b[^>]*/>", re.I)
 
 # Provenance fields in docProps/core.xml and docProps/app.xml that always come
 # out empty. dc:title is deliberately not listed: it is the document's own
@@ -1247,6 +1249,21 @@ def _scrub_ooxml_zip(
                     if n:
                         out.append(new[last:])
                         new = "".join(out)
+
+                # 3b. C2PA manifest element. This is a provenance *manifest*,
+                # not a provenance field: the whitelist above cannot express
+                # it, and _blob_hits (which inspect uses) never ran here, so
+                # inspect reported C2PA that clean left in place.
+                new, n_self = re.subn(_C2PA_MANIFEST_SELF_CLOSING_RE, "", new)
+                new, n_paired = _drop_tag_blocks(
+                    new,
+                    _C2PA_MANIFEST_OPEN_RE,
+                    _C2PA_MANIFEST_CLOSE_RE,
+                )
+                if n_self or n_paired:
+                    actions.append(
+                        f"scrub {name} c2pa manifest x{n_self + n_paired}"
+                    )
                 raw = new.encode("utf-8")
 
             # 4. [Content_Types].xml overrides
