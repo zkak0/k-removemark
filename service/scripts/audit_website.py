@@ -229,7 +229,9 @@ def _validated_target(
     origin = _url_origin(url)
 
     if expected_origin is not None and not _origin_allowed(origin, expected_origin):
-        raise ValueError(f"no se permite URL de origen cruzado: {origin[0]}://{origin[1]}:{origin[2]}")
+        raise ValueError(
+            f"no se permite URL de origen cruzado: {origin[0]}://{origin[1]}:{origin[2]}"
+        )
 
     return origin, _resolve_public_addresses(origin)
 

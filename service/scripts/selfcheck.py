@@ -239,7 +239,7 @@ def check_service() -> int:
         port = s.getsockname()[1]
 
     env = dict(os.environ, WATERMARKS_SERVER_PORT=str(port))
-    proc = subprocess.Popen(  # noqa: S603
+    proc = subprocess.Popen(
         [sys.executable, str(SCRIPTS / "server.py")],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -253,7 +253,8 @@ def check_service() -> int:
                 _fail(f"el servicio termino de inmediato (rc={proc.returncode})")
                 return 1
             try:
-                with urllib.request.urlopen(f"{base}/health", timeout=2) as r:
+                # S310: loopback propio, esquema fijo http, puerto efimero.
+                with urllib.request.urlopen(f"{base}/health", timeout=2) as r:  # noqa: S310
                     if r.status == 200 and json.loads(r.read())["ok"] is True:
                         ok = True
                         break
@@ -262,7 +263,9 @@ def check_service() -> int:
         if not ok:
             _fail(f"/health no respondio en {base}")
             return 1
-        with urllib.request.urlopen(f"{base}/capabilities", timeout=3) as r:
+        with urllib.request.urlopen(  # noqa: S310
+            f"{base}/capabilities", timeout=3
+        ) as r:
             claves = json.loads(r.read()).keys()
         for requerida in ("ok", "tools"):
             if requerida not in claves:

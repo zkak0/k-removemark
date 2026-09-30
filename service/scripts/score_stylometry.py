@@ -42,7 +42,11 @@ AI_PHRASE_PATTERNS: tuple[tuple[str, str, float], ...] = (
     (r"\bdelve(?:s|d)?\s+into\b", "profundizar en", 1.2),
     (r"\ba\s+testament\s+to\b", "un testimonio de", 1.1),
     (r"\brich\s+tapestry(?:\s+of)?\b", "rico tapiz", 1.3),
-    (r"\bplays?\s+a\s+(?:pivotal|crucial|vital|key)\s+role\b", "juega un papel fundamental/crucial", 1.0),
+    (
+        r"\bplays?\s+a\s+(?:pivotal|crucial|vital|key)\s+role\b",
+        "juega un papel fundamental/crucial",
+        1.0,
+    ),
     (
         r"\bin\s+(?:today'?s|the)\s+(?:(?:fast-paced|ever-evolving|digital|rapidly\s+changing)\s+)*(?:world|landscape|era|environment)\b",
         "en el mundo/paisaje actual/dinámico",
@@ -440,7 +444,9 @@ def score_text_stylometry(text: str, path: str = "<text>") -> StylometryReport:
         findings.append(f"Cadencia de frases anormalmente uniforme (CV={cv:.2f} < 0.35)")
 
     if ngram_density >= 1.0:
-        findings.append(f"Densidad elevada de transiciones formulísticas IA ({ngram_density:.2f}/100p)")
+        findings.append(
+            f"Densidad elevada de transiciones formulísticas IA ({ngram_density:.2f}/100p)"
+        )
 
     if final_score >= 0.75:
         confidence = "HIGH"

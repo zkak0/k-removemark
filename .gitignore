@@ -1,7 +1,9 @@
 # Deny by default: only what is explicitly allowed below can be added to git.
-# The repo ships ONLY what the end user / AI agent needs. Development tooling
-# (tests, CI, Docker, benchmarks, internal docs) lives on the maintainer's
-# machine and is intentionally not published.
+# The repo ships the end-user/agent surface (service, skills, integrations,
+# launchers, manifests) plus the development tooling that makes the project
+# verifiable by anyone who clones it: tests, CI, lint config, benchmarks.
+# Still deliberately NOT published: Docker images, internal docs/ and the
+# maintainer-only dotfiles (.venv, .env, caches).
 /*
 !/.claude-plugin/
 !/.claude-plugin/**
@@ -38,6 +40,18 @@
 !/skills/clean-user-facing-text/
 !/skills/clean-user-facing-text/**
 
+# Development tooling: published so any clone can run and verify the project.
+!/tests/
+!/tests/**
+!/benchmarks/
+!/benchmarks/**
+!/.github/
+!/.github/**
+!/Makefile
+!/requirements-dev.txt
+!/ruff.toml
+!/pytest.ini
+
 # Exceptions even inside allowed trees
 .env
 **/__pycache__/
@@ -49,12 +63,11 @@ posts.md
 *.cleaned.*
 *.bak
 
-# Docker path is not shipped (agents run Python directly)
+# Docker path is not shipped: the images bake upstream code whose licenses are
+# not redistributable (see compose.yaml), and agents run Python directly.
+# The image-publishing workflow therefore stays unpublished too.
 /service/Dockerfile*
 /service/.dockerignore
-
-# Development-only tooling. These are NOT end-user/agent surface: the markdiffusion
-# and synthid backends stay published because image_meta.py and the setup_*.sh
-# scripts invoke them at runtime.
-/service/scripts/bench_synthid_text.py
-/service/scripts/verify_harness.py
+/.github/workflows/release-images.yml
+/compose.yaml
+/compose-check.sh

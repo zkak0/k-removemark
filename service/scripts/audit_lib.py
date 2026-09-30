@@ -207,7 +207,9 @@ def format_sarif(report: dict[str, Any]) -> dict[str, Any]:
         {
             "id": "AI-WATERMARK-C2PA",
             "name": "C2PAManifestDetected",
-            "shortDescription": {"text": "Manifiesto de procedencia C2PA / Content Credentials detectado"},
+            "shortDescription": {
+                "text": "Manifiesto de procedencia C2PA / Content Credentials detectado"
+            },
             "fullDescription": {
                 "text": "Se detectó un manifiesto de procedencia C2PA o una caja de metadatos JUMBF en el activo."
             },
@@ -217,7 +219,9 @@ def format_sarif(report: dict[str, Any]) -> dict[str, Any]:
         {
             "id": "AI-WATERMARK-METADATA",
             "name": "AIMetadataMarkerDetected",
-            "shortDescription": {"text": "Metadatos de generación de IA o marcadores de procedencia detectados"},
+            "shortDescription": {
+                "text": "Metadatos de generación de IA o marcadores de procedencia detectados"
+            },
             "fullDescription": {
                 "text": "Se detectaron marcadores de metadatos de IA o etiquetas de generador de contenedores en el archivo."
             },
@@ -227,7 +231,9 @@ def format_sarif(report: dict[str, Any]) -> dict[str, Any]:
         {
             "id": "AI-WATERMARK-UNICODE-LAYER-A",
             "name": "InvisibleUnicodeWatermarkCarrier",
-            "shortDescription": {"text": "Portadores de marca de agua Unicode invisibles o de ancho cero detectados"},
+            "shortDescription": {
+                "text": "Portadores de marca de agua Unicode invisibles o de ancho cero detectados"
+            },
             "fullDescription": {
                 "text": "Se encontraron caracteres de formato Unicode invisibles o espacios homóglifos utilizados como portadores de marcas de agua en el texto."
             },
@@ -237,7 +243,9 @@ def format_sarif(report: dict[str, Any]) -> dict[str, Any]:
         {
             "id": "AI-STYLES-HIGH-PROBABILITY",
             "name": "HighProbabilityAITextCadence",
-            "shortDescription": {"text": "Cadencia de texto IA estadística y estilométrica de alta probabilidad detectada"},
+            "shortDescription": {
+                "text": "Cadencia de texto IA estadística y estilométrica de alta probabilidad detectada"
+            },
             "fullDescription": {
                 "text": "El análisis estilométrico marcó el texto como altamente probable de ser generado por máquina."
             },

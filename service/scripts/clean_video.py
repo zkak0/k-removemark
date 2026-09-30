@@ -101,7 +101,6 @@ def scrub_frames_with_ffmpeg(
     }
 
 
-
 def clean_video(
     src: Path,
     dest: Path,
@@ -155,7 +154,7 @@ def main() -> int:
             args.path,
             dest,
             scrub_visible=args.scrub_visible,
-                corner=args.corner,
+            corner=args.corner,
         )
     except Exception as e:
         eprint(f"error: {e}")

@@ -62,6 +62,7 @@ def _signature(path: Path) -> tuple[int, int]:
     st = path.stat()
     return st.st_size, st.st_mtime_ns
 
+
 def _clean_one(path: Path) -> bool:
     """Returns True if the file was changed by cleaning."""
     proc = subprocess.run(
@@ -86,6 +87,7 @@ def _clean_one(path: Path) -> bool:
         stats.get("removed_count") or stats.get("replaced_count") or result.get("actions")
     )
     return changed
+
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__)

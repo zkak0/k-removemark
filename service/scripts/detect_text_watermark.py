@@ -143,7 +143,9 @@ def _resolve_config(upstream: Path, alg: str, config: str | None) -> Path:
     except OSError as e:
         raise _Unavailable(f"no se puede obtener el estado de config de MarkLLM {path}: {e}") from e
     if size > MAX_CONFIG_BYTES:
-        raise _Unavailable(f"config de MarkLLM demasiado grande ({size} bytes > {MAX_CONFIG_BYTES}): {path}")
+        raise _Unavailable(
+            f"config de MarkLLM demasiado grande ({size} bytes > {MAX_CONFIG_BYTES}): {path}"
+        )
     return path
 
 
@@ -273,7 +275,9 @@ def _cmd_watermark(args: argparse.Namespace, upstream: Path, alg: str) -> int:
     if args.json:
         emit_json(payload)
     else:
-        print(f"{alg}: muestra con marca de agua ({payload['watermarked_chars']} caracteres) -> {wm_out}")
+        print(
+            f"{alg}: muestra con marca de agua ({payload['watermarked_chars']} caracteres) -> {wm_out}"
+        )
         if unwatermarked is not None:
             print(
                 f"      muestra sin marca de agua ({payload['unwatermarked_chars']} caracteres) -> {args.unwatermarked_output}"

@@ -59,9 +59,7 @@ def main() -> int:
         if args.force_type == "text" or args.force_text:
             kind = "text"
         else:
-            note = (
-                "formato no reconocido; usá --as text|image|container|av o --force-text para forzarlo"
-            )
+            note = "formato no reconocido; usá --as text|image|container|av o --force-text para forzarlo"
             if args.json:
                 emit_json({"kind": "unknown", "path": file_label, "note": note})
             else:

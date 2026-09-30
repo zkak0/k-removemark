@@ -1,0 +1,8 @@
+# All changes need review from the maintainer before merge.
+# Only code-owner approvals count toward the required review on main.
+* @zkak0
+
+# Security-sensitive surface stays explicitly with the maintainer:
+# CI/CD workflows, dependency automation, and the security policy.
+/.github/ @zkak0
+SECURITY.md @zkak0

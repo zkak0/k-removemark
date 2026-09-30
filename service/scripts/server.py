@@ -985,7 +985,7 @@ def _healthy_instance(host: str, port: int, timeout: float = 1.5) -> bool:
 
     url = f"http://{host}:{port}/health"
     try:
-        with urlopen(Request(url), timeout=timeout) as resp:  # noqa: S310
+        with urlopen(Request(url), timeout=timeout) as resp:
             if resp.status != 200:
                 return False
             body = json.loads(resp.read().decode("utf-8"))
@@ -1020,9 +1020,7 @@ def main() -> int:
 
     # Persistent, single-instance service: if a healthy k-removemark already
     # answers here, reuse it and exit cleanly instead of spawning a duplicate.
-    if args.host in ("127.0.0.1", "localhost", "::1") and _healthy_instance(
-        args.host, args.port
-    ):
+    if args.host in ("127.0.0.1", "localhost", "::1") and _healthy_instance(args.host, args.port):
         eprint(
             f"el servicio k-removemark ya está corriendo en http://{args.host}:{args.port}; reutilizándolo"
         )

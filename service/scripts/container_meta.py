@@ -1261,9 +1261,7 @@ def _scrub_ooxml_zip(
                     _C2PA_MANIFEST_CLOSE_RE,
                 )
                 if n_self or n_paired:
-                    actions.append(
-                        f"scrub {name} c2pa manifest x{n_self + n_paired}"
-                    )
+                    actions.append(f"scrub {name} c2pa manifest x{n_self + n_paired}")
                 raw = new.encode("utf-8")
 
             # 4. [Content_Types].xml overrides
@@ -1883,12 +1881,11 @@ def _pdf_neutralize_info(data: bytes, actions: list[str]) -> bytes | None:
     as a plaintext object (PDF 1.5+ object streams), in which case the caller
     must report degraded rather than claim success.
     """
-    ref = None
-    for ref in _PDF_INFO_REF_RE.finditer(data):
-        pass  # last /Info wins: the trailer is written last
-    if ref is None:
+    # The last /Info wins: the trailer is written last.
+    refs = list(_PDF_INFO_REF_RE.finditer(data))
+    if not refs:
         return None
-    num = ref.group(1)
+    num = refs[-1].group(1)
 
     obj = _pdf_obj_re(num).search(data)
     if obj is None:
@@ -1947,9 +1944,7 @@ def _pdf_neutralize_info(data: bytes, actions: list[str]) -> bytes | None:
     if len(new_data) != len(data):  # belt and braces: never shift the xref
         actions.append("neutralizacion /Info descartada: cambiaria el tamano del archivo")
         return None
-    actions.append(
-        f"neutralizada info del PDF: {neutralized} cadenas vaciadas (tamano conservado)"
-    )
+    actions.append(f"neutralizada info del PDF: {neutralized} cadenas vaciadas (tamano conservado)")
     return new_data
 
 
