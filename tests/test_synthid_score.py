@@ -33,6 +33,7 @@ def test_score_synthid_cli_unavailable_without_upstream(
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
 
     assert r.returncode == 3

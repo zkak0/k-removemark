@@ -115,6 +115,7 @@ def _run_adapter(*args: str) -> subprocess.CompletedProcess[str]:
         text=True,
         env=env,
         check=False,
+        encoding="utf-8",
     )
 
 

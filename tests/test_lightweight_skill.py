@@ -43,6 +43,7 @@ def _run_installer(home: Path, *args: str, check: bool = True):
         text=True,
         capture_output=True,
         check=check,
+        encoding="utf-8",
     )
 
 

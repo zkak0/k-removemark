@@ -41,6 +41,7 @@ def _run(script: str, *args: str) -> subprocess.CompletedProcess:
         text=True,
         timeout=60,
         check=False,
+        encoding="utf-8",
     )
 
 

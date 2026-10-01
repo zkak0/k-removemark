@@ -140,6 +140,7 @@ def test_cli_unavailable_without_upstream(tmp_path: Path):
         text=True,
         env=env,
         check=False,
+        encoding="utf-8",
     )
     assert r.returncode == 3
     assert "markdiffusion not importable" in (r.stderr or "")
@@ -151,6 +152,7 @@ def test_cli_bad_input_missing_file(tmp_path: Path):
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
     assert r.returncode == 2
 
@@ -163,6 +165,7 @@ def test_cli_bad_scheme(tmp_path: Path):
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
     assert r.returncode == 2
     assert "unknown scheme" in (r.stderr or "")
@@ -176,6 +179,7 @@ def test_cli_missing_purify_output(tmp_path: Path):
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
     assert r.returncode == 2
 

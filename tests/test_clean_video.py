@@ -70,6 +70,7 @@ def test_cli_json(tmp_path):
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
     assert r.returncode == 0
     import json as _json

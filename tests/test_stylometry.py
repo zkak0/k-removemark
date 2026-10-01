@@ -160,6 +160,7 @@ def test_score_stylometry_cli():
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
     assert res_ai.returncode == 1
     data_ai = json.loads(res_ai.stdout)
@@ -172,6 +173,7 @@ def test_score_stylometry_cli():
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
     assert res_human.returncode == 0
     data_human = json.loads(res_human.stdout)
@@ -183,6 +185,7 @@ def test_score_stylometry_cli():
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
     assert res_thresh.returncode == 0
 
@@ -196,6 +199,7 @@ def test_inspect_text_stylometry_flag():
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
     assert res.returncode == 1
     data = json.loads(res.stdout)

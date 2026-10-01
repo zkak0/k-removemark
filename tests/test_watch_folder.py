@@ -57,6 +57,7 @@ def test_once_mode_cleans_copy(tmp_path):
         ],
         capture_output=True,
         text=True,
+        encoding="utf-8",
         timeout=120,
         check=False,
     )
@@ -81,7 +82,9 @@ def test_once_mode_idempotent(tmp_path):
         str(out),
         "--once",
     ]
-    subprocess.run(base, capture_output=True, text=True, timeout=120, check=False)
-    proc2 = subprocess.run(base, capture_output=True, text=True, timeout=120, check=False)
+    subprocess.run(base, capture_output=True, text=True, encoding="utf-8", timeout=120, check=False)
+    proc2 = subprocess.run(
+        base, capture_output=True, text=True, encoding="utf-8", timeout=120, check=False
+    )
     assert proc2.returncode == 0  # nothing new to clean
     assert (out / "note.txt").read_text(encoding="utf-8") == "Hi"

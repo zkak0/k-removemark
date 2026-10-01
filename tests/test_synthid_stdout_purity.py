@@ -63,6 +63,7 @@ def test_json_stdout_survives_noisy_upstream(tmp_path):
         text=True,
         timeout=60,
         check=False,
+        encoding="utf-8",
     )
 
     assert r.returncode == 0, r.stderr

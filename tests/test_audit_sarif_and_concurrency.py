@@ -139,6 +139,7 @@ def test_audit_dir_serial_vs_parallel(tmp_path):
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
     assert res_serial.returncode == 1
     data_serial = json.loads(res_serial.stdout)
@@ -149,6 +150,7 @@ def test_audit_dir_serial_vs_parallel(tmp_path):
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
     assert res_parallel.returncode == 1
     data_parallel = json.loads(res_parallel.stdout)
@@ -169,6 +171,7 @@ def test_audit_dir_cli_sarif_output(tmp_path):
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
     assert res.returncode == 1
     sarif_doc = json.loads(res.stdout)
@@ -181,6 +184,7 @@ def test_audit_dir_cli_sarif_output(tmp_path):
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
     assert res2.returncode == 1
     sarif_doc2 = json.loads(res2.stdout)

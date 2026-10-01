@@ -74,6 +74,7 @@ def test_cli_exit_code_zero_on_pass(tmp_path):
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
     assert r.returncode == 0
     assert out.exists()

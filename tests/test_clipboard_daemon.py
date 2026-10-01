@@ -45,6 +45,7 @@ def test_cli_once_monitor_only_clean_text():
         text=True,
         timeout=60,
         check=False,
+        encoding="utf-8",
     )
     # On machines with a clipboard the exit code depends on clipboard content,
     # so we only assert it ran without crashing (0, 1, or 2 all valid).

@@ -124,6 +124,7 @@ def test_cli_detect_json(tmp_path, bank):
         capture_output=True,
         text=True,
         check=False,
+        encoding="utf-8",
     )
     assert r.returncode == 0
     import json as _json
