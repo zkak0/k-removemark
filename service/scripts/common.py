@@ -289,7 +289,11 @@ def backup_path(src: Path) -> Path:
     same file must not overwrite it with an already-cleaned copy.
     """
     bak = src.with_suffix(src.suffix + ".bak")
-    if bak.is_file():
+    # A pre-placed symlink must not be mistaken for an existing backup:
+    # Path.is_file() follows symlinks, so a link to any readable file would
+    # short-circuit this check and hand the caller a .bak that writes
+    # elsewhere. Fall through to safe_write_bytes, which refuses symlinks.
+    if bak.is_file() and not bak.is_symlink():
         return bak
     try:
         safe_write_bytes(bak, src.read_bytes())
