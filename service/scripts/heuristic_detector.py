@@ -28,6 +28,13 @@ sys.path.insert(0, str(SCRIPTS_DIR))
 
 import score_stylometry as st  # noqa: E402
 
+# stdout/stderr must be UTF-8 whatever the console locale is: on Windows the
+# default is cp1252, which raises UnicodeEncodeError on the accented text these
+# CLIs print. Mirrors the import-time reconfigure in common.py.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="backslashreplace")
+
 DEFAULT_THRESHOLD = float(os.environ.get("WATERMARKS_HEURISTIC_THRESHOLD", "0.65"))
 MIN_SAMPLE_WORDS = st.MIN_SAMPLE_WORDS
 

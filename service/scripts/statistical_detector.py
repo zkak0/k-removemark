@@ -43,6 +43,13 @@ import sys
 from collections.abc import Sequence
 from typing import Any
 
+# stdout/stderr must be UTF-8 whatever the console locale is: on Windows the
+# default is cp1252, which raises UnicodeEncodeError on the accented text these
+# CLIs print. Mirrors the import-time reconfigure in common.py.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="backslashreplace")
+
 # -- configuration (env, overridable by kwargs) -----------------------------
 
 DEFAULT_KEY = int(os.environ.get("WATERMARKS_STATISTICAL_KEY", "15485863"))

@@ -36,6 +36,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from text_unicode import clean_text, inspect_text
 
+# stdout/stderr must be UTF-8 whatever the console locale is: on Windows the
+# default is cp1252, which raises UnicodeEncodeError on the accented text these
+# CLIs print. Mirrors the import-time reconfigure in common.py.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="backslashreplace")
+
 log = logging.getLogger("clipboard_daemon")
 
 

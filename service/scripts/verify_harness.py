@@ -32,6 +32,13 @@ sys.path.insert(0, str(SCRIPT_DIR))
 
 import statistical_detector as sd  # noqa: E402
 
+# stdout/stderr must be UTF-8 whatever the console locale is: on Windows the
+# default is cp1252, which raises UnicodeEncodeError on the accented text these
+# CLIs print. Mirrors the import-time reconfigure in common.py.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="backslashreplace")
+
 DEFAULT_SAMPLES = 60
 DEFAULT_TOKENS = 200
 GATE_MAX_FPR = 0.01

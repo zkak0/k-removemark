@@ -34,6 +34,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from score_synthid import score_file
 
+# stdout/stderr must be UTF-8 whatever the console locale is: on Windows the
+# default is cp1252, which raises UnicodeEncodeError on the accented text these
+# CLIs print. Mirrors the import-time reconfigure in common.py.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="backslashreplace")
+
 VERSION = os.environ.get("WATERMARKS_SYNTHID_SERVER_VERSION", "dev")
 
 # Mirror common.MAX_INPUT_BYTES (env-overridable) with the base64 envelope
