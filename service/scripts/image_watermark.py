@@ -227,17 +227,39 @@ def _bright_points(rows: list[list[tuple[int, int, int]]], threshold: int) -> li
 
 
 def _cluster(points: list[tuple[int, int]], gap: int = 8) -> list[list[tuple[int, int]]]:
-    """Greedy bucketing: points closer than `gap` join one bucket (a dot)."""
+    """Greedy bucketing: points closer than `gap` join one bucket (a dot).
+
+    A hash grid over cells of side ``gap + 1`` replaces the linear scan over
+    every bucket so far: a point can only have a neighbour within ``gap`` in
+    the 3x3 block of cells around it, so only those buckets are candidates.
+    Candidates are still tried in creation order and each one is confirmed with
+    the same predicate as before, so the output is identical to the linear
+    scan - it is just no longer O(points x buckets).
+
+    Every point registers its bucket in its own cell (not just the bucket's
+    first point), otherwise a cluster spanning several cells would become
+    undiscoverable from the cells it grew into.
+    """
+    side = gap + 1
     buckets: list[list[tuple[int, int]]] = []
+    grid: dict[tuple[int, int], list[int]] = {}
     for p in points:
-        placed = False
-        for b in buckets:
-            if any(abs(p[0] - q[0]) <= gap and abs(p[1] - q[1]) <= gap for q in b):
-                b.append(p)
-                placed = True
+        cx, cy = p[0] // side, p[1] // side
+        candidates: set[int] = set()
+        for nx in (cx - 1, cx, cx + 1):
+            for ny in (cy - 1, cy, cy + 1):
+                candidates.update(grid.get((nx, ny), ()))
+        target = -1
+        for bi in sorted(candidates):  # creation order, like the linear scan
+            if any(abs(p[0] - q[0]) <= gap and abs(p[1] - q[1]) <= gap for q in buckets[bi]):
+                target = bi
                 break
-        if not placed:
+        if target < 0:
             buckets.append([p])
+            target = len(buckets) - 1
+        else:
+            buckets[target].append(p)
+        grid.setdefault((cx, cy), []).append(target)
     return buckets
 
 
