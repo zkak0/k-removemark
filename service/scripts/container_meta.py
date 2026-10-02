@@ -1395,6 +1395,14 @@ def inspect_odt(data: bytes) -> tuple[bool, bool, list[str], dict]:
         with zipfile.ZipFile(io.BytesIO(data)) as zf:
             for info in zf.infolist():
                 _check_zip_budget(info, budget)
+                name = info.filename
+                # The spec-defined C2PA manifest store is a dedicated ZIP entry.
+                # Presence is the signal: the payload is an opaque JUMBF store,
+                # so a byte scan would depend on how the producer wrote it.
+                if _is_c2pa_zip_manifest(name):
+                    has_c2pa = True
+                    findings.append(f"{name}: manifiesto C2PA (ruta de la spec)")
+                    continue
                 raw = _read_zip_member(zf, info, budget)
                 c2, ai, hits = _blob_hits(raw)
                 if c2 or ai:
@@ -1448,6 +1456,13 @@ def clean_odt(data: bytes, *, also_layer_a_text: bool = True) -> tuple[bytes, li
                     text = new
                 raw = text.encode("utf-8")
             else:
+                # The spec-defined C2PA manifest store: drop by presence, not
+                # by content. Adding it to `dropped` makes the two-pass
+                # META-INF/manifest.xml rewrite prune its entry too.
+                if _is_c2pa_zip_manifest(name):
+                    actions.append(f"drop part {name} (manifiesto C2PA, ruta de la spec)")
+                    dropped.add(name)
+                    continue
                 c2, ai, _ = _blob_hits(raw)
                 if (c2 or ai) and name not in (
                     "content.xml",
@@ -1565,6 +1580,11 @@ def inspect_epub(data: bytes) -> tuple[bool, bool, list[str], dict]:
                 name = info.filename
                 if name in encrypted:
                     findings.append(f"{name}: encrypted content (skipped)")
+                    continue
+                # The spec-defined C2PA manifest store: presence is the signal.
+                if _is_c2pa_zip_manifest(name):
+                    has_c2pa = True
+                    findings.append(f"{name}: manifiesto C2PA (ruta de la spec)")
                     continue
                 raw = _read_zip_member(zf, info, budget)
                 if name.lower().endswith((".xhtml", ".html", ".htm")):
@@ -1760,7 +1780,14 @@ def clean_epub(data: bytes, *, also_layer_a_text: bool = True) -> tuple[bytes, l
                 kept.append((info, raw))
                 continue
 
-            # 4. Other parts: drop non-content parts carrying AI/C2PA markers
+            # 4. Other parts: drop non-content parts carrying AI/C2PA markers.
+            # The spec-defined C2PA manifest store goes first, by presence:
+            # _epub_content_part() would only catch it if the opaque JUMBF
+            # payload happened to contain a recognisable marker.
+            if _is_c2pa_zip_manifest(name):
+                actions.append(f"drop part {name} (manifiesto C2PA, ruta de la spec)")
+                dropped.add(name)
+                continue
             c2, ai, _hits = _blob_hits(raw)
             if (c2 or ai) and not _epub_content_part(name):
                 actions.append(f"drop part {name} (AI/C2PA markers)")

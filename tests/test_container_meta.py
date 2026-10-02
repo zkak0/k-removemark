@@ -20,6 +20,7 @@ sys.path.insert(0, str(SCRIPTS))
 from container_meta import (
     clean_container,
     clean_docx,
+    clean_epub,
     clean_html,
     clean_markdown,
     clean_odt,
@@ -27,6 +28,7 @@ from container_meta import (
     detect_container_format,
     inspect_container,
     inspect_docx,
+    inspect_epub,
     inspect_html,
     inspect_markdown,
     inspect_odt,
@@ -578,7 +580,9 @@ def _make_docx_with_c2pa_zip_manifest(*, with_override: bool) -> bytes:
 </cp:coreProperties>""",
         )
         # An opaque JUMBF store: detection must not depend on its bytes.
-        zf.writestr("META-INF/content_credential.c2pa", b"\x00\x00\x00\x0cjP\x00\x00c2pa" + b"\x00" * 32)
+        zf.writestr(
+            "META-INF/content_credential.c2pa", b"\x00\x00\x00\x0cjP\x00\x00c2pa" + b"\x00" * 32
+        )
     return buf.getvalue()
 
 
@@ -609,6 +613,140 @@ def test_docx_c2pa_zip_manifest_inspect_detects_and_clean_removes(with_override:
     with zipfile.ZipFile(io.BytesIO(data)) as original:
         assert rels == original.read("_rels/.rels")
         assert body == original.read("word/document.xml")
+
+    assert any("c2pa" in a.lower() and "drop" in a.lower() for a in actions), actions
+
+
+def _make_odt_with_c2pa_zip_manifest() -> bytes:
+    """ODT with the spec-defined C2PA manifest store.
+
+    ODT is OCF: every member is listed in META-INF/manifest.xml, so dropping
+    the manifest store also means pruning that entry.
+    """
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as zf:
+        zf.writestr("mimetype", "application/vnd.oasis.opendocument.text", zipfile.ZIP_STORED)
+        zf.writestr(
+            "content.xml",
+            '<?xml version="1.0" encoding="UTF-8"?><office:document-content '
+            'xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" '
+            'xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0">'
+            "<office:body><office:text><text:p>Hola</text:p></office:text></office:body>"
+            "</office:document-content>",
+        )
+        zf.writestr(
+            "styles.xml",
+            '<?xml version="1.0" encoding="UTF-8"?><office:document-styles '
+            'xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"/>',
+        )
+        zf.writestr(
+            "meta.xml",
+            '<?xml version="1.0" encoding="UTF-8"?><office:document-meta '
+            'xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" '
+            'xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0">'
+            "<meta:generator>LibreOffice</meta:generator></office:document-meta>",
+        )
+        zf.writestr(
+            "META-INF/manifest.xml",
+            """<?xml version="1.0" encoding="UTF-8"?>
+<manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0">
+  <manifest:file-entry manifest:full-path="/" manifest:media-type="application/vnd.oasis.opendocument.text"/>
+  <manifest:file-entry manifest:full-path="content.xml" manifest:media-type="text/xml"/>
+  <manifest:file-entry manifest:full-path="styles.xml" manifest:media-type="text/xml"/>
+  <manifest:file-entry manifest:full-path="meta.xml" manifest:media-type="text/xml"/>
+  <manifest:file-entry manifest:full-path="META-INF/content_credential.c2pa" manifest:media-type="application/c2pa"/>
+</manifest:manifest>""",
+        )
+        zf.writestr(
+            "META-INF/content_credential.c2pa", b"\x00\x00\x00\x0cjP\x00\x00c2pa" + b"\x00" * 32
+        )
+    return buf.getvalue()
+
+
+def _make_epub_with_c2pa_zip_manifest() -> bytes:
+    """EPUB with the spec-defined C2PA manifest store."""
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as zf:
+        zf.writestr("mimetype", "application/epub+zip", zipfile.ZIP_STORED)
+        zf.writestr(
+            "META-INF/container.xml",
+            """<?xml version="1.0" encoding="UTF-8"?>
+<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+  <rootfiles>
+    <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
+  </rootfiles>
+</container>""",
+        )
+        zf.writestr(
+            "OEBPS/content.opf",
+            """<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>Mi libro</dc:title>
+    <dc:identifier id="uid">urn:uuid:00000000-0000-0000-0000-000000000000</dc:identifier>
+    <dc:language>es</dc:language>
+  </metadata>
+  <manifest>
+    <item id="chap1" href="chapter1.xhtml" media-type="application/xhtml+xml"/>
+  </manifest>
+  <spine><itemref idref="chap1"/></spine>
+</package>""",
+        )
+        zf.writestr(
+            "OEBPS/chapter1.xhtml",
+            """<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Capitulo 1</title></head>
+<body><p>Hola mundo</p></body></html>""",
+        )
+        zf.writestr(
+            "META-INF/content_credential.c2pa", b"\x00\x00\x00\x0cjP\x00\x00c2pa" + b"\x00" * 32
+        )
+    return buf.getvalue()
+
+
+def test_odt_c2pa_zip_manifest_inspect_detects_and_clean_removes():
+    """ODT: the spec-defined manifest store is seen and dropped, and the OCF
+    manifest entry is pruned in the same pass."""
+    data = _make_odt_with_c2pa_zip_manifest()
+
+    has_c2pa, _has_ai, findings, _details = inspect_odt(data)
+    assert has_c2pa, findings
+    assert any("content_credential.c2pa" in f for f in findings), findings
+
+    cleaned, actions = clean_odt(data)
+    with zipfile.ZipFile(io.BytesIO(cleaned)) as zf:
+        assert zf.testzip() is None, "el ZIP resultante debe ser valido"
+        names = zf.namelist()
+        assert "META-INF/content_credential.c2pa" not in names
+        manifest = zf.read("META-INF/manifest.xml").decode()
+        assert "content_credential.c2pa" not in manifest, (
+            "la entrada del manifiesto OCF debe podarse"
+        )
+        # The visible body survives; meta:generator is dropped by design
+        # (existing ODT behaviour, unrelated to the C2PA store).
+        assert "Hola" in zf.read("content.xml").decode()
+        assert "meta:generator" not in zf.read("meta.xml").decode()
+
+    assert any("c2pa" in a.lower() and "drop" in a.lower() for a in actions), actions
+    assert any("manifest entries" in a for a in actions), actions
+
+
+def test_epub_c2pa_zip_manifest_inspect_detects_and_clean_removes():
+    """EPUB: the spec-defined manifest store is seen and dropped."""
+    data = _make_epub_with_c2pa_zip_manifest()
+
+    has_c2pa, _has_ai, findings, _details = inspect_epub(data)
+    assert has_c2pa, findings
+    assert any("content_credential.c2pa" in f for f in findings), findings
+
+    cleaned, actions = clean_epub(data)
+    with zipfile.ZipFile(io.BytesIO(cleaned)) as zf:
+        assert zf.testzip() is None, "el ZIP resultante debe ser valido"
+        assert "META-INF/content_credential.c2pa" not in zf.namelist()
+        # Package document and content survive untouched.
+        with zipfile.ZipFile(io.BytesIO(data)) as original:
+            for part in ("META-INF/container.xml", "OEBPS/content.opf", "OEBPS/chapter1.xhtml"):
+                assert zf.read(part) == original.read(part), f"{part} no debe cambiar"
 
     assert any("c2pa" in a.lower() and "drop" in a.lower() for a in actions), actions
 
