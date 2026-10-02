@@ -752,6 +752,21 @@ _C2PA_MANIFEST_OPEN_RE = re.compile(r"<c2pa:manifest\b[^>]*>", re.I)
 _C2PA_MANIFEST_CLOSE_RE = re.compile(r"</c2pa:manifest\s*>", re.I)
 _C2PA_MANIFEST_SELF_CLOSING_RE = re.compile(r"<c2pa:manifest\b[^>]*/>", re.I)
 
+# The spec-compliant C2PA manifest store inside any ZIP-based document
+# (DOCX/XLSX/PPTX, EPUB, ODT, OpenXPS): a dedicated *stored* ZIP entry at a
+# fixed path, not a relationship target and not an XML element. See the C2PA
+# spec 2.x "ZIP embedding" section; writerslogic/c2pa-zip documents the
+# transport. Detection is by presence, not by content: the payload is an
+# opaque JUMBF store and a byte scan would depend on the producer.
+C2PA_ZIP_MANIFEST = "meta-inf/content_credential.c2pa"
+C2PA_ZIP_CONTENT_TYPE = "application/c2pa"
+
+
+def _is_c2pa_zip_manifest(name: str) -> bool:
+    """True for the C2PA manifest store entry of a ZIP-based document."""
+    return name.lower().rstrip("/") == C2PA_ZIP_MANIFEST
+
+
 # Provenance fields in docProps/core.xml and docProps/app.xml that always come
 # out empty. dc:title is deliberately not listed: it is the document's own
 # heading, not provenance.
@@ -837,6 +852,13 @@ def _inspect_ooxml_zip(data: bytes, fmt: str) -> tuple[bool, bool, list[str], di
             for info in zf.infolist():
                 _check_zip_budget(info, budget)
                 name = info.filename
+                # The spec-defined C2PA manifest store is a dedicated ZIP entry.
+                # Its presence is the signal: the payload is an opaque JUMBF
+                # store, so a byte scan would depend on how the producer wrote it.
+                if _is_c2pa_zip_manifest(name):
+                    has_c2pa = True
+                    findings.append(f"{name}: manifiesto C2PA (ruta de la spec)")
+                    continue
                 # Check media parts for C2PA/AI metadata
                 if re.search(
                     r"^(?:word|xl|ppt)/media/.+\.(png|jpe?g|webp|avif|heic|gif|bmp|tiff?|svg)$",
@@ -1226,6 +1248,13 @@ def _scrub_ooxml_zip(
                 actions.append(f"drop part {name}")
                 continue
 
+            # 2b. Drop the spec-defined C2PA manifest store. This is the
+            # canonical location for a C2PA manifest in a ZIP-based document,
+            # and it is not referenced from any .rels, so nothing dangles.
+            if _is_c2pa_zip_manifest(name):
+                actions.append(f"drop part {name} (manifiesto C2PA, ruta de la spec)")
+                continue
+
             # 3. docProps/ provenance
             if name in DOCX_META_PARTS or name.startswith("docProps/"):
                 if name.endswith("custom.xml"):
@@ -1282,6 +1311,20 @@ def _scrub_ooxml_zip(
                 )
                 if n:
                     actions.append(f"drop Content_Types custom.xml override x{n}")
+                    raw = new.encode("utf-8")
+                # The manifest store entry is a ZIP member at a fixed path, so
+                # a producer may declare it with an Override. A Default for the
+                # "c2pa" extension is deliberately left alone: it is inert once
+                # the entry is gone, and removing it could break an archive that
+                # still uses the extension legitimately.
+                new, n = re.subn(
+                    r'<Override\b[^>]*PartName="/META-INF/content_credential\.c2pa"[^>]*/>',
+                    "",
+                    raw.decode("utf-8", errors="replace"),
+                    flags=re.I,
+                )
+                if n:
+                    actions.append(f"drop Content_Types content_credential override x{n}")
                     raw = new.encode("utf-8")
 
             # 5. Layer A text runs

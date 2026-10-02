@@ -531,6 +531,88 @@ def test_docx_c2pa_manifest_inspect_detects_and_clean_removes(self_closing: bool
     ET.fromstring(core)  # noqa: S314
 
 
+def _make_docx_with_c2pa_zip_manifest(*, with_override: bool) -> bytes:
+    """DOCX with the spec-defined C2PA manifest store.
+
+    The C2PA spec 2.x "ZIP embedding" method puts the Manifest Store in a
+    dedicated *stored* ZIP entry at META-INF/content_credential.c2pa for every
+    ZIP-based document (DOCX/XLSX/PPTX, EPUB, ODT, OpenXPS). That is the
+    canonical location and it is not an XML element and not a relationship
+    target. See writerslogic/c2pa-zip for the transport description.
+    """
+    override = (
+        '<Override PartName="/META-INF/content_credential.c2pa" ContentType="application/c2pa"/>'
+        if with_override
+        else ""
+    )
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as zf:
+        zf.writestr(
+            "[Content_Types].xml",
+            """<?xml version="1.0"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>
+  """
+            + override
+            + "</Types>",
+        )
+        zf.writestr(
+            "_rels/.rels",
+            """<?xml version="1.0"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>
+</Relationships>""",
+        )
+        zf.writestr(
+            "word/document.xml",
+            '<?xml version="1.0"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>Hola</w:t></w:r></w:p></w:body></w:document>',
+        )
+        zf.writestr(
+            "docProps/core.xml",
+            """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <dc:title>Mi Documento</dc:title>
+  <dc:creator>ChatGPT</dc:creator>
+</cp:coreProperties>""",
+        )
+        # An opaque JUMBF store: detection must not depend on its bytes.
+        zf.writestr("META-INF/content_credential.c2pa", b"\x00\x00\x00\x0cjP\x00\x00c2pa" + b"\x00" * 32)
+    return buf.getvalue()
+
+
+@pytest.mark.parametrize("with_override", [False, True], ids=["no-override", "override"])
+def test_docx_c2pa_zip_manifest_inspect_detects_and_clean_removes(with_override: bool):
+    """The spec-defined manifest store must be seen and dropped.
+
+    Detection is by presence, not content: the payload is an opaque JUMBF
+    store, so a byte scan would depend on how the producer wrote it.
+    """
+    data = _make_docx_with_c2pa_zip_manifest(with_override=with_override)
+
+    has_c2pa, _has_ai, findings, _details = inspect_docx(data)
+    assert has_c2pa, findings
+    assert any("content_credential.c2pa" in f for f in findings), findings
+
+    cleaned, actions = clean_docx(data)
+    with zipfile.ZipFile(io.BytesIO(cleaned)) as zf:
+        assert zf.testzip() is None, "el ZIP resultante debe ser valido"
+        names = zf.namelist()
+        assert "META-INF/content_credential.c2pa" not in names
+        ct = zf.read("[Content_Types].xml").decode()
+        assert "content_credential" not in ct, "el Override debe caerse tambien"
+        # No relationship points at the manifest, so none may change.
+        rels = zf.read("_rels/.rels")
+        body = zf.read("word/document.xml")
+
+    with zipfile.ZipFile(io.BytesIO(data)) as original:
+        assert rels == original.read("_rels/.rels")
+        assert body == original.read("word/document.xml")
+
+    assert any("c2pa" in a.lower() and "drop" in a.lower() for a in actions), actions
+
+
 def test_docx_docprops_scrub_clears_residual_warning(tmp_path: Path):
     src = tmp_path / "in.docx"
     src.write_bytes(_make_docx_with_docprops())
